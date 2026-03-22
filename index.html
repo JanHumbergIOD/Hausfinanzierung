@@ -121,6 +121,31 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .split-p1{background:rgba(0,201,177,.6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;transition:width .15s}
 .split-p2{background:rgba(0,153,255,.6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex:1;transition:width .15s}
 .split-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+
+/* ── TIMELINE ── */
+.timeline-wrap{overflow-x:auto;padding:16px 0;margin:8px 0}
+.timeline{position:relative;height:80px;min-width:600px}
+.tl-line{position:absolute;top:36px;left:0;right:0;height:3px;background:var(--border)}
+.tl-event{position:absolute;transform:translateX(-50%);text-align:center;cursor:default}
+.tl-dot{width:14px;height:14px;border-radius:50%;border:2px solid #fff;margin:0 auto;position:relative;top:30px}
+.tl-label{font-size:10px;color:var(--text2);margin-top:6px;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
+.tl-year{position:absolute;top:44px;font-size:10px;color:var(--border);transform:translateX(-50%)}
+/* ── SCORE ── */
+.score-ring{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;margin:12px 0}
+.score-circle{position:relative;width:120px;height:120px}
+.score-circle svg{transform:rotate(-90deg)}
+.score-circle .sc-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700}
+.score-factors{flex:1;min-width:220px}
+.sf-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.sf-bar-wrap{width:80px;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.sf-bar{height:100%;border-radius:3px;transition:width .4s}
+/* ── ZINSRISIKO ── */
+.zr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:10px 0}
+.zr-card{border-radius:8px;padding:12px;border:1px solid}
+.zr-neutral{border-color:var(--border);background:var(--bg3)}
+.zr-warn{border-color:var(--yellow);background:rgba(255,209,102,.06)}
+.zr-danger{border-color:var(--red);background:rgba(255,77,109,.06)}
+.zr-val{font-size:1.1rem;font-weight:700;margin:4px 0}
 </style>
 </head>
 <body>
@@ -134,6 +159,14 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 
 <!-- ==================== TAB FINANZIERUNG ==================== -->
 <div id="tab-fin" class="tab-content active">
+
+  <!-- TIMELINE -->
+  <div class="card" id="timeline-card">
+    <h2>🗓️ Ereignis-Timeline</h2>
+    <p class="muted" style="font-size:12px;margin-bottom:8px">Alle wichtigen Ereignisse über die Kreditlaufzeit auf einen Blick.</p>
+    <div class="timeline-wrap"><div class="timeline" id="tl-inner"></div></div>
+    <div id="tl-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px"></div>
+  </div>
   <div class="dashboard">
     <div class="kpi"><div class="kpi-label">💰 Monatliche Rate</div><div class="kpi-val" id="k-rate">–</div></div>
     <div class="kpi"><div class="kpi-label">📅 Gesamtlaufzeit</div><div class="kpi-val" id="k-lz">–</div></div>
@@ -474,6 +507,23 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       <button class="btn btn-sm" onclick="SHARE.importFromText()">✅ Wiederherstellen</button>
     </div>
     <div id="import-toast" style="display:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;margin-top:8px"></div>
+  </div>
+
+  <!-- FINANZCHECK SCORE -->
+  <div class="card" id="score-card">
+    <h2>🔢 Finanzcheck-Score</h2>
+    <p class="muted" style="font-size:12px;margin-bottom:12px">Bewertung deiner Finanzierungssituation in 6 Faktoren. 100 = optimale Situation.</p>
+    <div class="score-ring">
+      <div class="score-circle">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--bg4)" stroke-width="10"/>
+          <circle id="score-arc" cx="60" cy="60" r="50" fill="none" stroke="#00c9b1" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"/>
+        </svg>
+        <div class="sc-num" id="score-num">–</div>
+      </div>
+      <div class="score-factors" id="score-factors"></div>
+    </div>
+    <div id="score-verdict" style="margin-top:10px"></div>
   </div>
   <div id="ov-content"></div>
 </div>
@@ -1106,6 +1156,9 @@ const CALC={
     const yrs=Object.keys(by);
     CHARTS.bar('ch-zt',[{label:'Zinsanteil',data:yrs.map(y=>by[y].za),backgroundColor:'rgba(255,77,109,.7)',stack:'a'},{label:'Tilgung',data:yrs.map(y=>by[y].ta),backgroundColor:'rgba(0,201,177,.7)',stack:'a'}],yrs.map(y=>'J'+y),true);
     CHARTS.doughnut('ch-donut',['Kreditbetrag','Nebenkosten','Gesamtzinsen'],[kredit,nkSum,totalZinsen],['#0099ff','#ffd166','#ff4d6d']);
+    // New modules
+    TIMELINE.render(plan);
+    ZINSRISIKO.render(plan, kredit);
   },
 
   runHH(){
@@ -1299,6 +1352,7 @@ const CALC={
       ${frei>=500&&frei<1000?`<div class="alert alert-warn">📌 Liquidität knapp: ${U.eur(frei)}/M</div>`:''}
       ${frei>=1000?`<div class="alert alert-ok">✅ Gute Liquidität: ${U.eur(frei)}/M</div>`:''}
     </div>`;
+    SCORE.render(PLAN.data);
   }
 };
 
@@ -1660,6 +1714,240 @@ const STORAGE = {
     });
   }
 };
+
+/* ============================================================
+   TIMELINE MODULE
+   ============================================================ */
+const TIMELINE = {
+  COLORS: {
+    start:    '#00c9b1',
+    zinsende: '#ffd166',
+    sonder:   '#9b5de5',
+    elternzeit:'#f77f00',
+    kind:     '#ff9ff3',
+    anschluss:'#ff4d6d',
+    heute:    '#06d6a0'
+  },
+  render(plan) {
+    const el = document.getElementById('tl-inner');
+    const leg = document.getElementById('tl-legend');
+    if (!el || !plan.length) return;
+
+    const lzM = plan.length;
+    const bindM = U.n('f-bind') * 12;
+    const startStr = U.s('f-start') || '2025-01';
+    const [sYr, sMo] = startStr.split('-').map(Number);
+
+    const toX = m => (m / lzM) * 100;
+
+    // Collect events
+    const events = [];
+    events.push({ m:1, label:'Start
+'+startStr, color:this.COLORS.start, icon:'🏠' });
+    events.push({ m:bindM, label:'Zinsbindungsende
+'+U.monthLabel(bindM), color:this.COLORS.zinsende, icon:'🔄' });
+    events.push({ m:lzM, label:'Volltilgung
+'+U.monthLabel(lzM), color:this.COLORS.anschluss, icon:'✅' });
+
+    // Sondertilgungen
+    ST.items.forEach(s => {
+      if (s.betrag > 0) {
+        const m = s.abJahr * 12;
+        if (m <= lzM) events.push({ m, label:'Sondert.
+'+U.eur(s.betrag), color:this.COLORS.sonder, icon:'⚡' });
+      }
+    });
+
+    // Elternzeiten
+    ['1','2'].forEach(p => {
+      if (U.chk('p'+p+'-ez-on')) {
+        const start = U.n('p'+p+'-ez-start');
+        const dauer = U.n('p'+p+'-ez-dauer');
+        if (start <= lzM) events.push({ m:start, label:'EZ '+U.name(p), color:this.COLORS.elternzeit, icon:'👶', width:(dauer/lzM*100) });
+      }
+    });
+
+    // Kinder
+    KINDER.items.forEach(k => {
+      if (k.geburtM <= lzM) events.push({ m:k.geburtM, label:k.name, color:this.COLORS.kind, icon:'👶' });
+    });
+
+    // Heute
+    const now = new Date();
+    const todayM = (now.getFullYear()-sYr)*12 + (now.getMonth()+1-sMo);
+    if (todayM > 0 && todayM < lzM) events.push({ m:todayM, label:'Heute', color:this.COLORS.heute, icon:'📍' });
+
+    // Year markers
+    const years = [];
+    for (let y=1; y<=Math.ceil(lzM/12); y+=Math.max(1,Math.floor(lzM/12/8))) {
+      years.push(y);
+    }
+
+    el.style.height = '80px';
+    el.innerHTML =
+      '<div class="tl-line"></div>' +
+      years.map(y => '<div class="tl-year" style="left:'+toX(y*12)+'%">'+U.yearLabel(y)+'</div>').join('') +
+      events.map(e => {
+        const x = toX(e.m);
+        const w = e.width ? e.width : 0;
+        if (w > 0) {
+          return '<div style="position:absolute;left:'+x+'%;top:30px;width:'+w+'%;height:14px;background:'+e.color+'33;border:1px solid '+e.color+';border-radius:4px;cursor:default" title="'+e.label.replace('
+',' ')+'"></div>'+
+            '<div class="tl-event" style="left:'+x+'%"><div class="tl-dot" style="background:'+e.color+'"></div><div class="tl-label">'+e.label.replace('
+','<br>')+'</div></div>';
+        }
+        return '<div class="tl-event" style="left:'+x+'%"><div class="tl-dot" style="background:'+e.color+'"></div><div class="tl-label">'+e.icon+' '+e.label.replace('
+','<br>')+'</div></div>';
+      }).join('');
+
+    // Legend
+    const colors = Object.entries(this.COLORS);
+    const labels = {start:'Kreditstart',zinsende:'Zinsbindungsende',sonder:'Sondertilgung',elternzeit:'Elternzeit',kind:'Kind',anschluss:'Volltilgung',heute:'Heute'};
+    leg.innerHTML = colors.map(([k,c]) => '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:'+c+';display:inline-block"></span>'+labels[k]+'</span>').join('');
+  }
+};
+
+/* ============================================================
+   ZINSRISIKO MODULE
+   ============================================================ */
+const ZINSRISIKO = {
+  render(plan, kredit) {
+    const el = document.getElementById('zr-grid');
+    if (!el) return;
+    const bindM = U.n('f-bind') * 12;
+    const tp = U.n('f-tilg');
+    const currentZins = U.n('f-zins');
+    const restschuld = plan[Math.min(bindM, plan.length)-1]?.rs ?? 0;
+    if (restschuld <= 0) { el.innerHTML = '<div class="alert alert-ok">✅ Keine Anschlussfinanzierung nötig – Kredit innerhalb Zinsbindung vollgetilgt.</div>'; CHARTS.destroy('ch-zr'); return; }
+
+    const currentRate = ENGINE.calc(restschuld, currentZins, tp, 600, [], [])[0]?.rate ?? 0;
+    const deltas = [0, 1, 2, 3];
+    const results = deltas.map(d => {
+      const zp = currentZins + d;
+      const newPlan = ENGINE.calc(restschuld, zp, tp, 600, [], []);
+      const newRate = newPlan[0]?.rate ?? 0;
+      const mehrM = newRate - currentRate;
+      const totalZins = newPlan.reduce((s,r) => s+r.za, 0);
+      return { d, zp, rate:newRate, mehrM, totalZins };
+    });
+
+    el.innerHTML = results.map(r => {
+      const cls = r.d===0?'zr-neutral':r.d<=1?'zr-warn':'zr-danger';
+      const icon = r.d===0?'📊':r.d===1?'⚠️':'🚨';
+      return '<div class="zr-card '+cls+'">'+
+        '<div style="font-size:11px;color:var(--text2)">'+icon+' Anschlusszins '+U.pct(r.zp,1)+(r.d>0?' (+'+r.d+' %)':'')+'</div>'+
+        '<div class="zr-val">'+U.eur(r.rate)+'/M</div>'+
+        (r.d>0?'<div style="font-size:12px;color:var(--red)">+'+U.eur(r.mehrM)+'/Monat</div>':'<div style="font-size:12px;color:var(--text2)">Basis (heutiger Zins)</div>')+
+        '<div style="font-size:11px;color:var(--text2);margin-top:4px">Zinsen ges.: '+U.eur(r.totalZins)+'</div>'+
+        '</div>';
+    }).join('');
+
+    // Chart
+    CHARTS.destroy('ch-zr');
+    const labels = results.map(r => '+'+r.d+' %');
+    const rates  = results.map(r => r.rate);
+    const o = CHARTS._base();
+    o.plugins.legend = { display:false };
+    CHARTS.cache['ch-zr'] = new Chart(document.getElementById('ch-zr').getContext('2d'), {
+      type:'bar',
+      data:{ labels, datasets:[{
+        label:'Monatliche Rate nach Anschluss',
+        data: rates,
+        backgroundColor: results.map(r => r.d===0?'rgba(0,201,177,.7)':r.d<=1?'rgba(255,209,102,.7)':'rgba(255,77,109,.7)'),
+        borderRadius:6
+      }]},
+      options: o
+    });
+  }
+};
+
+/* ============================================================
+   FINANZCHECK SCORE MODULE
+   ============================================================ */
+const SCORE = {
+  factors: [
+    { key:'ek',    label:'Eigenkapitalquote',  max:20, tip:'Ziel: >20% des Kaufpreises' },
+    { key:'wq',    label:'Wohnkostenquote',     max:20, tip:'Ziel: <30% des Einkommens' },
+    { key:'puffer',label:'Monatl. Puffer',      max:20, tip:'Ziel: >1000€/M freie Liquidität' },
+    { key:'tilg',  label:'Tilgungshöhe',         max:15, tip:'Ziel: ≥2% Anfangstilgung' },
+    { key:'lz',    label:'Kreditlaufzeit',       max:15, tip:'Ziel: <30 Jahre Gesamtlaufzeit' },
+    { key:'rest',  label:'Restschuld-Risiko',    max:10, tip:'Ziel: Restschuld <50% des Kaufpreises' },
+  ],
+
+  calc(plan) {
+    const kp     = U.n('f-kaufpreis');
+    const ek     = U.n('f-ek');
+    const kredit = Math.max(0, kp - ek);
+    const bindM  = U.n('f-bind') * 12;
+    const tp     = U.n('f-tilg');
+    const nkSum  = kp * (U.n('nk-grest')+U.n('nk-notar')+U.n('nk-gb')+U.n('nk-makler'))/100;
+    const sum    = ENGINE.summary(plan, bindM);
+    const kRate  = plan[0]?.rate ?? 0;
+    const income = CALC._calcIncome ? CALC._calcIncome() : { gesamt: 0 };
+    const gesamtEink = income.gesamt;
+
+    const wohn = FIXED.sum(WOHNKOSTEN_IDS);
+    const leben = FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
+    const ausgaben = kRate + wohn + leben;
+    const frei = gesamtEink - ausgaben;
+    const wohnQ = gesamtEink > 0 ? (kRate+wohn)/gesamtEink*100 : 100;
+    const ekQ   = kp > 0 ? ek/kp*100 : 0;
+
+    const scores = {
+      ek:    Math.min(20, (ekQ / 25) * 20),
+      wq:    Math.min(20, Math.max(0, (1 - wohnQ/50) * 20)),
+      puffer:Math.min(20, Math.max(0, (frei / 1500) * 20)),
+      tilg:  Math.min(15, (tp / 3) * 15),
+      lz:    Math.min(15, Math.max(0, ((30*12 - sum.laufzeit)/(20*12)) * 15)),
+      rest:  Math.min(10, Math.max(0, (1 - sum.restschuld/kp) * 10)),
+    };
+
+    const total = Math.round(Object.values(scores).reduce((a,b) => a+b, 0));
+    return { total, scores };
+  },
+
+  render(plan) {
+    const arcEl      = document.getElementById('score-arc');
+    const numEl      = document.getElementById('score-num');
+    const factorsEl  = document.getElementById('score-factors');
+    const verdictEl  = document.getElementById('score-verdict');
+    if (!arcEl || !plan.length) return;
+
+    const { total, scores } = this.calc(plan);
+    const circumference = 314;
+    const offset = circumference - (total/100) * circumference;
+
+    // Color based on score
+    const color = total >= 70 ? '#06d6a0' : total >= 45 ? '#ffd166' : '#ff4d6d';
+    arcEl.style.stroke = color;
+    arcEl.style.strokeDashoffset = offset;
+    numEl.textContent = total;
+    numEl.style.color = color;
+
+    factorsEl.innerHTML = this.factors.map(f => {
+      const pts = scores[f.key] ?? 0;
+      const pct = (pts / f.max) * 100;
+      const barColor = pct >= 70 ? '#06d6a0' : pct >= 40 ? '#ffd166' : '#ff4d6d';
+      return '<div class="sf-row" title="'+f.tip+'">' +
+        '<span>'+f.label+'</span>' +
+        '<span style="display:flex;align-items:center;gap:6px">' +
+          '<div class="sf-bar-wrap"><div class="sf-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div>' +
+          '<span style="width:32px;text-align:right;font-size:11px;font-weight:600">'+Math.round(pts)+'/'+f.max+'</span>' +
+        '</span>' +
+        '</div>';
+    }).join('');
+
+    const verdicts = [
+      { min:80, cls:'alert-ok',     icon:'🏆', text:'Exzellent! Deine Finanzierung ist sehr solide aufgestellt.' },
+      { min:65, cls:'alert-ok',     icon:'✅', text:'Gut! Solide Finanzierung mit kleinen Optimierungsmöglichkeiten.' },
+      { min:45, cls:'alert-warn',   icon:'📌', text:'Im Rahmen, aber mit Luft nach oben. Auf die markierten Faktoren achten.' },
+      { min:0,  cls:'alert-danger', icon:'⚠️', text:'Erhöhtes Risiko. Einige Faktoren sollten vor dem Kauf verbessert werden.' },
+    ];
+    const v = verdicts.find(x => total >= x.min);
+    verdictEl.innerHTML = '<div class="alert '+v.cls+'">'+v.icon+' <strong>Score '+total+'/100:</strong> '+v.text+'</div>';
+  }
+};
+
 // Small helper referenced inline
 CALC._calcPKMode=function(){
   const m=U.s('pk-mode');
