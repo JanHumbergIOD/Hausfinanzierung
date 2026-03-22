@@ -146,6 +146,32 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .zr-warn{border-color:var(--yellow);background:rgba(255,209,102,.06)}
 .zr-danger{border-color:var(--red);background:rgba(255,77,109,.06)}
 .zr-val{font-size:1.1rem;font-weight:700;margin:4px 0}
+
+/* ── ENERGIE TAB ── */
+.massnahme-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.massnahme-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;user-select:none}
+.massnahme-header:hover{background:rgba(128,128,128,.05)}
+.massnahme-toggle{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.massnahme-title{flex:1;font-weight:600;font-size:14px}
+.massnahme-badge{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600}
+.badge-bestand{background:rgba(6,214,160,.2);color:var(--green)}
+.badge-geplant{background:rgba(0,153,255,.2);color:var(--accent2)}
+.badge-nein{background:rgba(128,128,128,.15);color:var(--text2)}
+.massnahme-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.massnahme-body.open{display:block}
+.energie-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0}
+.ekpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.ekpi .el{color:var(--text2);font-size:11px;margin-bottom:3px}
+.ekpi .ev{font-size:1rem;font-weight:700;color:var(--accent)}
+.ekpi .ev.red{color:var(--red)}.ekpi .ev.green{color:var(--green)}.ekpi .ev.yellow{color:var(--yellow)}
+.amort-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:6px 0}
+.amort-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .5s}
+.energie-klasse{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:6px;font-weight:700;font-size:16px;color:#fff}
+.ek-ap{background:#007a33}.ek-a{background:#00a550}.ek-b{background:#52ae32}.ek-c{background:#b5c800}
+.ek-d{background:#f7cc00;color:#333}.ek-e{background:#eb8c00}.ek-f{background:#dc4600}.ek-g{background:#c8002d}.ek-h{background:#8a0025}
+.empfehlung-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:13px}
+.empfehlung-rank{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cf-energie{background:rgba(6,214,160,.06);border-left:3px solid var(--green)}
 </style>
 </head>
 <body>
@@ -945,13 +971,14 @@ const CASHFLOW={
 
       const kg=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kindergeld:s,0);
       const kindK=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kosten:s,0);
-      const einkommen=p1+p2+kg;
+      const energieEinmal=(()=>{  let s=0;  ['wp','pv','bat','mod'].forEach(function(id){    const r=energieRes[id];    if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat) s+=r.nettoKosten;  });  return s;})();const energieRes=window._energieResults||{};const energieEinmal=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat)s+=r.nettoKosten;});return s;})();const energieSpar=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();
+    const einkommen=p1+p2+kg;
       const kRate=planData[m-1]?.rate??0;
       const wohn=wohnBase*inf;
       const leben=(lebenBase+kindK)*inf;
       const sonstige=(extraBase+pkM)*inf;
-      const ausgaben=kRate+wohn+leben+sonstige;
-      const frei=einkommen-ausgaben;
+      const ausgaben=kRate+wohn+leben+(extraBase+pkM)*inf-energieSpar;
+      const frei=einkommen-ausgaben-energieEinmal;
       const inEZ1=income.ez1&&m>=income.ez1.start&&m<income.ez1.start+income.ez1.dauer;
       const inEZ2=income.ez2&&m>=income.ez2.start&&m<income.ez2.start+income.ez2.dauer;
       const inRed1=income.ez1?.red&&m>=income.ez1.start+income.ez1.dauer&&m<income.ez1.start+income.ez1.dauer+income.ez1.red.dauer;
@@ -1498,6 +1525,7 @@ const SHARE = {
       document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
       U.el('tab-'+id).classList.add('active');
+      if(id==='energie') ENERGIE.calc();
       if(id==='hh') CALC.runHH();
       if(id==='pers'){PERS.render();SPLIT.update();}
       if(id==='ov') CALC.runOV();
@@ -1948,6 +1976,235 @@ const SCORE = {
   }
 };
 
+
+/* ============================================================
+   ENERGIE MODULE
+   ============================================================ */
+const ENERGIE = {
+  // Richtwerte Förderquoten BEG 2024
+  FOERDERUNG: {
+    wp:  { basis: 0.30, bonus_gas: 0.05, bonus_low_income: 0.05, max: 0.70, maxBetrag: 30000 },
+    mod: { basis: 0.15, bonus_effizienz: 0.10, bonus_worst: 0.10, max: 0.35, maxBetrag: 60000 },
+    bat: { basis: 0.10, laender: 0.10, max: 0.20, maxBetrag: 10000 }, // Länderförderung variiert
+    pv:  { basis: 0, steuer: true } // keine direkte BEG-Förderung, aber Steuerbefreiung
+  },
+  // Energieklassen-Kennwerte (kWh/m²a) und CO2 kg/kWh
+  KLASSEN: {
+    'Ap':{max:30,label:'A+',co2:0.04},'A':{max:50,label:'A',co2:0.06},'B':{max:75,label:'B',co2:0.09},
+    'C':{max:100,label:'C',co2:0.13},'D':{max:130,label:'D',co2:0.18},'E':{max:160,label:'E',co2:0.23},
+    'F':{max:200,label:'F',co2:0.28},'G':{max:250,label:'G',co2:0.33},'H':{max:999,label:'H',co2:0.38}
+  },
+  KLASSEN_CSS: {'Ap':'ek-ap','A':'ek-a','B':'ek-b','C':'ek-c','D':'ek-d','E':'ek-e','F':'ek-f','G':'ek-g','H':'ek-h'},
+
+  toggle(id) {
+    const body = document.getElementById('mb-body-' + id);
+    const icon = document.getElementById('mt-' + id);
+    if (!body) return;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    if (icon) icon.textContent = isOpen ? '▶' : '▼';
+  },
+
+  updateBadge(id) {
+    const status = U.s('e-' + id + '-status');
+    const badge = document.getElementById('mb-' + id);
+    if (!badge) return;
+    badge.textContent = status === 'bestand' ? 'Vorhanden' : status === 'geplant' ? 'Geplant' : 'Nicht geplant';
+    badge.className = 'massnahme-badge ' + (status === 'bestand' ? 'badge-bestand' : status === 'geplant' ? 'badge-geplant' : 'badge-nein');
+  },
+
+  renderKlasse() {
+    const kl = U.s('e-klasse');
+    const el = document.getElementById('e-klasse-display');
+    if (!el) return;
+    if (!kl) { el.innerHTML = ''; return; }
+    const info = this.KLASSEN[kl];
+    const cssClass = this.KLASSEN_CSS[kl] || '';
+    const wfl = U.n('i-wohnflaeche') || 150;
+    const kwh = info ? Math.round(wfl * (info.max * 0.8)) : 0;
+    el.innerHTML = '<span class="energie-klasse ' + cssClass + '">' + (info?.label || kl) + '</span>' +
+      '<div><div style="font-size:13px;font-weight:600">Energieklasse ' + (info?.label || kl) + '</div>' +
+      '<div class="muted" style="font-size:12px">ca. ' + kwh + ' kWh/Jahr bei ' + wfl + ' m² · CO₂: ' + (info ? (info.co2 * kwh).toFixed(0) : '?') + ' kg/Jahr</div></div>';
+  },
+
+  calcPV() {
+    const kwp = U.n('e-pv-kwp'), preis = U.n('e-pv-preis');
+    U.setAuto('e-pv-kosten', Math.round(kwp * preis), 0);
+  },
+
+  calcBat() {
+    const kwh = U.n('e-bat-kwh'), preis = U.n('e-bat-preis');
+    U.setAuto('e-bat-kosten', Math.round(kwh * preis), 0);
+  },
+
+  calcMod() {
+    let total = 0;
+    if (U.chk('e-mod-daemmung')) total += 15000;
+    if (U.chk('e-mod-dach'))     total += 8000;
+    if (U.chk('e-mod-fenster'))  total += 12000;
+    if (U.chk('e-mod-keller'))   total += 3000;
+    const el = document.getElementById('e-mod-kosten');
+    if (el) el.value = total;
+  },
+
+  _calcMassnahme(id) {
+    const status = U.s('e-' + id + '-status');
+    const kosten = U.n('e-' + id + '-kosten');
+    const monat  = U.n('e-' + id + '-monat') || 1;
+    const heizkosten = U.n('e-heizkosten');
+    const stromkosten = U.n('e-stromkosten');
+    const foerd = this.FOERDERUNG[id] || {};
+
+    // Förderquote berechnen
+    let foerdQuote = foerd.basis || 0;
+    const heiztyp = U.s('e-heiztyp');
+    if (id === 'wp' && (heiztyp === 'gas' || heiztyp === 'oel')) foerdQuote += foerd.bonus_gas || 0;
+    if (id === 'mod') {
+      const kl = U.s('e-klasse');
+      if (kl === 'G' || kl === 'H') foerdQuote += foerd.bonus_worst || 0;
+      foerdQuote += foerd.bonus_effizienz || 0;
+    }
+    foerdQuote = Math.min(foerdQuote, foerd.max || 0);
+
+    const foerdBetrag = Math.min(kosten * foerdQuote, foerd.maxBetrag || 999999);
+    const nettoKosten = kosten - foerdBetrag;
+
+    // Jährliche Einsparung schätzen
+    let einsparungJahr = 0;
+    if (id === 'wp') {
+      // WP spart ~70-80% Heizkosten, aber Strom kostet mehr
+      einsparungJahr = heizkosten * 0.6 - (heizkosten * 0.15); // netto ca. 45%
+    } else if (id === 'pv') {
+      const kwp = U.n('e-pv-kwp');
+      const eigenQ = U.n('e-pv-eigen') / 100;
+      const jahresertrag = kwp * 900; // kWh/Jahr (Norddeutschland)
+      const eigenverbrauch = jahresertrag * eigenQ * 0.32; // 32 Cent/kWh Ersparnis
+      const einspeisung = jahresertrag * (1-eigenQ) * 0.08; // 8 Cent Einspeiseverg.
+      einsparungJahr = eigenverbrauch + einspeisung;
+    } else if (id === 'bat') {
+      // Speicher erhöht Eigenverbrauch um ca. 15-20%
+      const pvKwp = U.n('e-pv-kwp');
+      const zusatz = pvKwp * 900 * 0.15 * 0.32;
+      einsparungJahr = zusatz;
+    } else if (id === 'mod') {
+      // Dämmung spart 20-40% Heizkosten
+      let faktor = 0;
+      if (U.chk('e-mod-daemmung')) faktor += 0.12;
+      if (U.chk('e-mod-dach'))     faktor += 0.08;
+      if (U.chk('e-mod-fenster'))  faktor += 0.10;
+      if (U.chk('e-mod-keller'))   faktor += 0.04;
+      einsparungJahr = heizkosten * faktor;
+    }
+
+    const amortJahre = einsparungJahr > 0 ? nettoKosten / einsparungJahr : 99;
+    const wfl = U.n('i-wohnflaeche') || 150;
+    const co2Einsparung = id === 'wp' ? wfl * 15 : id === 'pv' ? U.n('e-pv-kwp') * 400 : id === 'mod' ? wfl * 8 : 0;
+
+    return { status, kosten, foerdBetrag, foerdQuote, nettoKosten, einsparungJahr, amortJahre, co2Einsparung, monat };
+  },
+
+  _renderKPI(id, data) {
+    const el = document.getElementById('ekpi-' + id);
+    if (!el || data.status === 'nein') { if(el) el.innerHTML=''; return; }
+    const foerdPct = Math.round(data.foerdQuote * 100);
+    const amortColor = data.amortJahre < 10 ? 'green' : data.amortJahre < 20 ? 'yellow' : 'red';
+    const isBestand = data.status === 'bestand';
+
+    el.innerHTML = (isBestand ? '' :
+      '<div class="ekpi"><div class="el">Investition brutto</div><div class="ev red">' + U.eur(data.kosten) + '</div></div>' +
+      '<div class="ekpi"><div class="el">Förderung (' + foerdPct + '% BEG)</div><div class="ev green">-' + U.eur(data.foerdBetrag) + '</div></div>' +
+      '<div class="ekpi"><div class="el">Netto-Investition</div><div class="ev">' + U.eur(data.nettoKosten) + '</div></div>') +
+      '<div class="ekpi"><div class="el">Einsparung/Jahr</div><div class="ev green">+' + U.eur(data.einsparungJahr, 0) + '</div></div>' +
+      (isBestand ? '' : '<div class="ekpi"><div class="el">Amortisation</div><div class="ev ' + amortColor + '">' + (data.amortJahre > 50 ? '>50 J.' : data.amortJahre.toFixed(1) + ' J.') + '</div></div>') +
+      '<div class="ekpi"><div class="el">CO₂-Einsparung/J.</div><div class="ev green">' + Math.round(data.co2Einsparung) + ' kg</div></div>';
+  },
+
+  calc() {
+    this.renderKlasse();
+    const ids = ['wp','pv','bat','mod'];
+    const results = {};
+    ids.forEach(id => {
+      const d = this._calcMassnahme(id);
+      results[id] = d;
+      this._renderKPI(id, d);
+    });
+
+    // Gesamtauswertung
+    const active = ids.filter(id => results[id].status !== 'nein');
+    const geplant = ids.filter(id => results[id].status === 'geplant');
+    const gesamtBrutto = geplant.reduce((s,id) => s + results[id].kosten, 0);
+    const gesamtFoerd  = geplant.reduce((s,id) => s + results[id].foerdBetrag, 0);
+    const gesamtNetto  = geplant.reduce((s,id) => s + results[id].nettoKosten, 0);
+    const gesamtEinsparung = active.reduce((s,id) => s + results[id].einsparungJahr, 0);
+    const gesamtCO2  = active.reduce((s,id) => s + results[id].co2Einsparung, 0);
+
+    // Empfehlung erstellen
+    const empfehlungen = [];
+    const heiztyp = U.s('e-heiztyp');
+    const heizBj  = U.n('e-heiz-bj');
+    const klasse  = U.s('e-klasse');
+    const heizAlt = new Date().getFullYear() - heizBj;
+    if ((heiztyp === 'gas' || heiztyp === 'oel') && results['wp'].status === 'nein')
+      empfehlungen.push({prio:1, text:'Wärmepumpe prüfen: ' + (heizAlt > 15 ? 'Heizung ist ' + heizAlt + ' Jahre alt – Austausch sinnvoll.' : 'Gasverbrenner – bei nächstem Austausch Wärmepumpe wählen.'), icon:'🔥'});
+    if (results['mod'].status === 'nein' && (klasse === 'E' || klasse === 'F' || klasse === 'G' || klasse === 'H'))
+      empfehlungen.push({prio:2, text:'Dämmung dringend empfohlen: Energieklasse ' + (klasse||'?') + ' – erhebliche Einsparungen möglich.', icon:'🏗️'});
+    if (results['pv'].status === 'nein')
+      empfehlungen.push({prio:3, text:'PV-Anlage: Bei Eigenheim immer prüfen. Amortisation meist 8–12 Jahre, danach 25+ Jahre kostenloser Strom.', icon:'☀️'});
+    if (results['pv'].status !== 'nein' && results['bat'].status === 'nein')
+      empfehlungen.push({prio:4, text:'Batteriespeicher erhöht den PV-Eigenverbrauch von ~30% auf ~60% – lohnt sich besonders mit Wärmepumpe.', icon:'🔋'});
+    empfehlungen.sort((a,b) => a.prio - b.prio);
+
+    // Erreichbare Klasse nach Maßnahmen
+    let zielKlasse = klasse;
+    if (results['mod'].status !== 'nein' && results['wp'].status !== 'nein') zielKlasse = 'B';
+    else if (results['mod'].status !== 'nein') zielKlasse = 'C';
+    else if (results['wp'].status !== 'nein') zielKlasse = klasse === 'H' || klasse === 'G' ? 'E' : klasse;
+
+    const el = document.getElementById('e-gesamt');
+    if (!el) return;
+
+    el.innerHTML =
+      (active.length === 0 && geplant.length === 0 ? '<p class="muted">Noch keine Maßnahmen ausgewählt.</p>' :
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">' +
+        (geplant.length > 0 ?
+          '<div class="ekpi"><div class="el">Investition gesamt</div><div class="ev red">' + U.eur(gesamtBrutto) + '</div></div>' +
+          '<div class="ekpi"><div class="el">Förderung gesamt</div><div class="ev green">-' + U.eur(gesamtFoerd) + '</div></div>' +
+          '<div class="ekpi"><div class="el">Netto-Investition</div><div class="ev">' + U.eur(gesamtNetto) + '</div></div>' : '') +
+        '<div class="ekpi"><div class="el">Einsparung/Jahr</div><div class="ev green">+' + U.eur(gesamtEinsparung, 0) + '</div></div>' +
+        '<div class="ekpi"><div class="el">CO₂-Einsparung/J.</div><div class="ev green">' + Math.round(gesamtCO2) + ' kg</div></div>' +
+        (geplant.length > 0 && gesamtEinsparung > 0 ? '<div class="ekpi"><div class="el">Amortisation</div><div class="ev ' + (gesamtNetto/gesamtEinsparung < 15 ? 'green' : 'yellow') + '">' + (gesamtNetto/gesamtEinsparung).toFixed(1) + ' J.</div></div>' : '') +
+        (klasse && zielKlasse && zielKlasse !== klasse ? '<div class="ekpi"><div class="el">Klasse nach Maßnahmen</div><div class="ev"><span class="energie-klasse ' + (this.KLASSEN_CSS[zielKlasse]||'') + '" style="width:28px;height:28px;font-size:13px">' + zielKlasse.replace('Ap','A+') + '</span></div></div>' : '') +
+        '</div>') +
+      (empfehlungen.length > 0 ?
+        '<h3 style="margin-bottom:10px">💡 Empfehlungen</h3>' +
+        empfehlungen.map((e,i) => '<div class="empfehlung-row"><div class="empfehlung-rank">' + (i+1) + '</div><span style="font-size:16px">' + e.icon + '</span><span>' + e.text + '</span></div>').join('') +
+        '<div class="alert alert-info" style="margin-top:10px;font-size:12px">ℹ️ Alle Kosten und Förderquoten sind Richtwerte (Stand 2024). Professionelle Energieberatung und aktuelle KfW/BAFA-Konditionen immer vorab prüfen.</div>'
+        : '');
+
+    // Cashflow info
+    const cfEl = document.getElementById('e-cashflow-info');
+    if (cfEl) {
+      const items = geplant.map(id => ({
+        name: {wp:'Wärmepumpe',pv:'PV-Anlage',bat:'Batteriespeicher',mod:'Grundmodernisierung'}[id],
+        monat: results[id].monat,
+        kosten: results[id].nettoKosten,
+        einsparungM: results[id].einsparungJahr / 12
+      }));
+      cfEl.innerHTML = items.length === 0 ? '<p class="muted" style="font-size:13px">Keine geplanten Maßnahmen.</p>' :
+        items.map(it => '<div class="ov-row cf-energie"><span>' + it.name + ' (Monat ' + it.monat + ')</span>' +
+          '<span style="display:flex;gap:16px">' +
+          '<span class="muted" style="font-size:12px">Einmalig: <strong style="color:var(--red)">' + U.eur(it.kosten) + '</strong></span>' +
+          '<span class="muted" style="font-size:12px">Ersparnis ab dann: <strong style="color:var(--green)">+' + U.eur(it.einsparungM, 0) + '/M</strong></span>' +
+          '</span></div>'
+        ).join('') +
+        '<div class="alert alert-ok" style="margin-top:10px;font-size:12px">✅ Die Einsparungen fließen automatisch in den Cashflow-Verlauf ein (Tab: Haushalt → Cashflow-Verlauf).</div>';
+    }
+
+    // Store results for cashflow integration
+    window._energieResults = results;
+  }
+};
+
 // Small helper referenced inline
 CALC._calcPKMode=function(){
   const m=U.s('pk-mode');
@@ -1955,4 +2212,174 @@ CALC._calcPKMode=function(){
 };
 </script>
 </body>
+</html><div class="tab" data-tab="energie">⚡ Energie</div>
+    <div id="tab-energie" class="tab-content">
+
+  <div class="card">
+    <h2>🏠 Ist-Zustand der Immobilie</h2>
+    <div class="g3">
+      <div class="field"><label>Energieausweis-Klasse</label>
+        <select id="e-klasse" onchange="ENERGIE.renderKlasse();ENERGIE.calc()">
+          <option value="">Unbekannt</option>
+          <option value="Ap">A+</option><option value="A">A</option><option value="B">B</option>
+          <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+          <option value="F">F</option><option value="G">G</option><option value="H">H</option>
+        </select>
+      </div>
+      <div class="field"><label>Heizungstyp aktuell</label>
+        <select id="e-heiztyp" onchange="ENERGIE.calc()">
+          <option value="gas">Gasheizung</option><option value="oel">Ölheizung</option>
+          <option value="wp">Wärmepumpe</option><option value="fernwaerme">Fernwärme</option>
+          <option value="pellets">Pelletheizung</option><option value="nachtspeicher">Nachtspeicher</option>
+        </select>
+      </div>
+      <div class="field"><label>Baujahr Heizung</label>
+        <input type="number" id="e-heiz-bj" value="2005" min="1970" max="2025" oninput="ENERGIE.calc()">
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Jährl. Heizkosten heute (€)</label>
+        <input type="number" id="e-heizkosten" value="2400" min="0" step="100" oninput="ENERGIE.calc()"></div>
+      <div class="field"><label>Jährl. Stromkosten heute (€)</label>
+        <input type="number" id="e-stromkosten" value="1200" min="0" step="100" oninput="ENERGIE.calc()"></div>
+    </div>
+    <div id="e-klasse-display" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Maßnahmen – Bestand & Planung</h2>
+    <p class="muted" style="font-size:12px;margin-bottom:12px">Hinterlege was bereits vorhanden ist und was du planst.</p>
+
+    <div class="massnahme-card">
+      <div class="massnahme-header" onclick="ENERGIE.toggle('wp')">
+        <span id="mt-wp" class="massnahme-toggle">▶</span>
+        <span style="font-size:18px">🔥</span>
+        <span class="massnahme-title">Wärmepumpe</span>
+        <select id="e-wp-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('wp');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
+          <option value="nein">Nicht geplant</option>
+          <option value="bestand">Bereits vorhanden</option>
+          <option value="geplant">Geplant</option>
+        </select>
+        <span class="massnahme-badge badge-nein" id="mb-wp">Nicht geplant</span>
+      </div>
+      <div class="massnahme-body" id="mb-body-wp">
+        <div class="g3" style="margin-top:12px">
+          <div class="field"><label>Typ</label>
+            <select id="e-wp-typ" onchange="ENERGIE.calc()">
+              <option value="luft">Luft-Wasser (~15.000€)</option>
+              <option value="sole">Sole-Wasser/Erde (~22.000€)</option>
+              <option value="wasser">Wasser-Wasser (~20.000€)</option>
+            </select>
+          </div>
+          <div class="field"><label>Investitionskosten (€)</label>
+            <input type="number" id="e-wp-kosten" value="18000" min="0" step="500" oninput="ENERGIE.calc()"></div>
+          <div class="field"><label>Einbau Monat ab Kauf</label>
+            <input type="number" id="e-wp-monat" value="3" min="1" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="energie-kpi" id="ekpi-wp"></div>
+      </div>
+    </div>
+
+    <div class="massnahme-card">
+      <div class="massnahme-header" onclick="ENERGIE.toggle('pv')">
+        <span id="mt-pv" class="massnahme-toggle">▶</span>
+        <span style="font-size:18px">☀️</span>
+        <span class="massnahme-title">PV-Anlage</span>
+        <select id="e-pv-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('pv');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
+          <option value="nein">Nicht geplant</option>
+          <option value="bestand">Bereits vorhanden</option>
+          <option value="geplant">Geplant</option>
+        </select>
+        <span class="massnahme-badge badge-nein" id="mb-pv">Nicht geplant</span>
+      </div>
+      <div class="massnahme-body" id="mb-body-pv">
+        <div class="g3" style="margin-top:12px">
+          <div class="field"><label>Größe (kWp)</label>
+            <input type="number" id="e-pv-kwp" value="10" min="1" max="100" step="0.5" oninput="ENERGIE.calcPV();ENERGIE.calc()"></div>
+          <div class="field"><label>Preis/kWp (€)</label>
+            <input type="number" id="e-pv-preis" value="1200" min="500" max="2500" step="50" oninput="ENERGIE.calcPV();ENERGIE.calc()"></div>
+          <div class="field"><label>Eigenverbrauch (%)</label>
+            <input type="number" id="e-pv-eigen" value="30" min="0" max="100" step="5" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Gesamtkosten (€) <span class="hint">(auto)</span></label>
+            <input type="number" id="e-pv-kosten" value="12000" min="0" data-auto="true" oninput="ENERGIE.calc()"></div>
+          <div class="field"><label>Einbau Monat ab Kauf</label>
+            <input type="number" id="e-pv-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="energie-kpi" id="ekpi-pv"></div>
+      </div>
+    </div>
+
+    <div class="massnahme-card">
+      <div class="massnahme-header" onclick="ENERGIE.toggle('bat')">
+        <span id="mt-bat" class="massnahme-toggle">▶</span>
+        <span style="font-size:18px">🔋</span>
+        <span class="massnahme-title">Batteriespeicher</span>
+        <select id="e-bat-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('bat');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
+          <option value="nein">Nicht geplant</option>
+          <option value="bestand">Bereits vorhanden</option>
+          <option value="geplant">Geplant</option>
+        </select>
+        <span class="massnahme-badge badge-nein" id="mb-bat">Nicht geplant</span>
+      </div>
+      <div class="massnahme-body" id="mb-body-bat">
+        <div class="g3" style="margin-top:12px">
+          <div class="field"><label>Kapazität (kWh)</label>
+            <input type="number" id="e-bat-kwh" value="10" min="1" max="50" step="1" oninput="ENERGIE.calcBat();ENERGIE.calc()"></div>
+          <div class="field"><label>Preis/kWh (€)</label>
+            <input type="number" id="e-bat-preis" value="800" min="300" max="1500" step="50" oninput="ENERGIE.calcBat();ENERGIE.calc()"></div>
+          <div class="field"><label>Einbau Monat ab Kauf</label>
+            <input type="number" id="e-bat-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Gesamtkosten (€) <span class="hint">(auto)</span></label>
+            <input type="number" id="e-bat-kosten" value="8000" min="0" data-auto="true" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="energie-kpi" id="ekpi-bat"></div>
+      </div>
+    </div>
+
+    <div class="massnahme-card">
+      <div class="massnahme-header" onclick="ENERGIE.toggle('mod')">
+        <span id="mt-mod" class="massnahme-toggle">▶</span>
+        <span style="font-size:18px">🏗️</span>
+        <span class="massnahme-title">Grundmodernisierung</span>
+        <select id="e-mod-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('mod');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
+          <option value="nein">Nicht geplant</option>
+          <option value="bestand">Bereits vorhanden</option>
+          <option value="geplant">Geplant</option>
+        </select>
+        <span class="massnahme-badge badge-nein" id="mb-mod">Nicht geplant</span>
+      </div>
+      <div class="massnahme-body" id="mb-body-mod">
+        <div class="g2" style="margin-top:12px">
+          <div class="check-row"><input type="checkbox" id="e-mod-daemmung" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-daemmung">Außenwanddämmung (~15.000 €)</label></div>
+          <div class="check-row"><input type="checkbox" id="e-mod-dach" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-dach">Dachdämmung (~8.000 €)</label></div>
+          <div class="check-row"><input type="checkbox" id="e-mod-fenster" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-fenster">Fenster & Türen (~12.000 €)</label></div>
+          <div class="check-row"><input type="checkbox" id="e-mod-keller" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-keller">Kellerdeckendämmung (~3.000 €)</label></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Gesamtkosten (€)</label>
+            <input type="number" id="e-mod-kosten" value="0" min="0" step="1000" oninput="ENERGIE.calc()"></div>
+          <div class="field"><label>Einbau Monat ab Kauf</label>
+            <input type="number" id="e-mod-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
+        </div>
+        <div class="energie-kpi" id="ekpi-mod"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Gesamtauswertung & Empfehlung</h2>
+    <div id="e-gesamt"></div>
+  </div>
+
+  <div class="card">
+    <h2>📅 Cashflow-Auswirkung</h2>
+    <p class="muted" style="font-size:12px;margin-bottom:10px">Investitionskosten als Einmalkosten, Einsparungen reduzieren ab Einbau die monatlichen Ausgaben.</p>
+    <div id="e-cashflow-info"></div>
+  </div>
+
+</div>
 </html>
