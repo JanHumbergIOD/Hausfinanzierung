@@ -1489,15 +1489,83 @@ const SHARE = {
 /* ============================================================
    MODULE 14 – INIT
    ============================================================ */
-(function init(){
-  FIXED.render();
-  EXTRA.render();
-  KINDER.render();
-  PERS.render();
-  ST.add();
-  CALC.run();
-})();
+(function init(){FIXED.render();EXTRA.render();KINDER.render();PERS.render();ST.add();STORAGE.loadFromUrl().then(ok=>{if(!ok){STORAGE.autoLoad();CALC.run();}});const _r=CALC.run.bind(CALC);CALC.run=function(){_r();STORAGE.autoSave();};})();
 
+
+const STORAGE={
+  _encrypt(t,pw){if(!pw)return btoa(unescape(encodeURIComponent(t)));let r='';for(let i=0;i<t.length;i++)r+=String.fromCharCode(t.charCodeAt(i)^pw.charCodeAt(i%pw.length));return btoa(unescape(encodeURIComponent(r)));},
+  _decrypt(e,pw){try{const t=decodeURIComponent(escape(atob(e)));if(!pw)return t;let r='';for(let i=0;i<t.length;i++)r+=String.fromCharCode(t.charCodeAt(i)^pw.charCodeAt(i%pw.length));return r;}catch(e){return null;}},
+  autoSave(){try{localStorage.setItem('hf_state',JSON.stringify(SHARE._collect()));localStorage.setItem('hf_time',new Date().toISOString());const b=U.el('save-status-bar');if(b)b.textContent='💾 Gespeichert: '+new Date().toLocaleTimeString('de-DE');}catch(e){}},
+  autoLoad(){try{const r=localStorage.getItem('hf_state');if(!r)return false;SHARE._applyState(JSON.parse(r));const t=localStorage.getItem('hf_time');const b=U.el('save-status-bar');if(b&&t)b.textContent='💾 Wiederhergestellt: '+new Date(t).toLocaleString('de-DE');return true;}catch(e){return false;}},
+  saveDialog(){
+    U.el('cloud-modal-title').textContent='☁️ Speichern & Teilen';
+    U.el('cloud-modal-body').innerHTML='<p class="muted" style="font-size:12px;margin-bottom:12px">Deine Eingaben werden in der Cloud gespeichert. Du bekommst einen Teilen-Link.</p><div class="field"><label>Passwort (optional)</label><input type="password" id="s-pw" placeholder="Leer = kein Passwort"></div><div class="field"><label>Beschreibung</label><input type="text" id="s-desc" placeholder="z.B. Haus Flensburg"></div><div id="s-status" style="margin-top:10px"></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-sm" style="background:var(--accent);color:#000;border-color:var(--accent)" onclick="STORAGE._doSave()">💾 Speichern</button><button class="btn btn-sm btn-del" onclick="U.show('cloud-modal',false)">Abbrechen</button></div>';
+    U.show('cloud-modal',true);
+  },
+  async _doSave(){
+    const pw=U.el('s-pw')?.value||'',desc=U.el('s-desc')?.value||'Hausfinanzierung',st=U.el('s-status');
+    st.innerHTML='<span style="color:var(--accent)">⏳ Wird gespeichert...</span>';
+    try{
+      const state=SHARE._collect();state._desc=desc;state._saved=new Date().toISOString();
+      const enc=this._encrypt(JSON.stringify(state),pw);
+      const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':'$2a$10$8K1p/a0dclxMzA.M3O5ode8E6V3ZdqR5lQJ3H.OZjXFiLPJB.Cj5e','X-Bin-Name':desc,'X-Access-Type':'private'},body:JSON.stringify({d:enc,p:!!pw})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const res=await r.json();const id=res.metadata?.id;
+      if(!id)throw new Error('Keine ID');
+      localStorage.setItem('hf_cloud_id',id);
+      const url=location.origin+location.pathname+'?id='+id+(pw?'&pw=1':'');
+      st.innerHTML='<div class="alert alert-ok" style="margin-bottom:8px">✅ Gespeichert!</div><div class="field"><label>Teilen-Link</label><input type="text" value="'+url+'" readonly onclick="this.select()" style="font-size:11px;font-family:monospace"></div>'+(pw?'<div class="alert alert-warn" style="font-size:12px;margin-top:6px">🔒 Passwort separat mitteilen!</div>':'')+'<button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard?.writeText(''+url+'');this.textContent='✅ Kopiert!'">📋 Link kopieren</button>';
+    }catch(e){st.innerHTML='<div class="alert alert-danger">❌ '+e.message+'</div>';}
+  },
+  loadDialog(){
+    U.el('cloud-modal-title').textContent='📂 Stand laden';
+    const lid=localStorage.getItem('hf_cloud_id')||'';
+    U.el('cloud-modal-body').innerHTML='<p class="muted" style="font-size:12px;margin-bottom:12px">Lade einen gespeicherten Stand per ID oder Link.</p><div class="field"><label>ID oder Link</label><input type="text" id="l-id" value="'+lid+'" placeholder="ID oder vollständige URL"></div><div class="field"><label>Passwort (falls geschützt)</label><input type="password" id="l-pw"></div><div id="l-status" style="margin-top:10px"></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-sm" style="background:var(--accent);color:#000;border-color:var(--accent)" onclick="STORAGE._doLoad()">📂 Laden</button><button class="btn btn-sm btn-del" onclick="U.show('cloud-modal',false)">Abbrechen</button></div>';
+    U.show('cloud-modal',true);
+  },
+  async _doLoad(){
+    let id=(U.el('l-id')?.value||'').trim();const pw=U.el('l-pw')?.value||'',st=U.el('l-status');
+    const m=id.match(/[?&]id=([^&]+)/);if(m)id=m[1];
+    if(!id){st.innerHTML='<div class="alert alert-danger">Bitte ID eingeben</div>';return;}
+    st.innerHTML='<span style="color:var(--accent)">⏳ Wird geladen...</span>';
+    try{
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':'$2a$10$8K1p/a0dclxMzA.M3O5ode8E6V3ZdqR5lQJ3H.OZjXFiLPJB.Cj5e'}});
+      if(!r.ok)throw new Error('Nicht gefunden ('+r.status+')');
+      const res=await r.json();const enc=res.record?.d;
+      if(!enc)throw new Error('Ungültiges Format');
+      const json=this._decrypt(enc,pw);if(!json)throw new Error('Falsches Passwort');
+      const state=JSON.parse(json);SHARE._applyState(state);CALC.run();
+      localStorage.setItem('hf_cloud_id',id);U.show('cloud-modal',false);
+      const b=U.el('save-status-bar');if(b)b.textContent='💾 Geladen: '+(state._desc||id);
+    }catch(e){st.innerHTML='<div class="alert alert-danger">❌ '+e.message+'</div>';}
+  },
+  async loadFromUrl(){
+    const p=new URLSearchParams(location.search),id=p.get('id');if(!id)return false;
+    if(p.get('pw')==='1'){
+      setTimeout(()=>{
+        U.el('cloud-modal-title').textContent='🔒 Passwort eingeben';
+        U.el('cloud-modal-body').innerHTML='<div class="field"><label>Passwort</label><input type="password" id="u-pw" autofocus></div><div id="u-status" style="margin-top:8px"></div><button class="btn btn-sm" style="margin-top:10px;background:var(--accent);color:#000" onclick="STORAGE._unlockUrl(''+id+'')">Entsperren</button>';
+        U.show('cloud-modal',true);setTimeout(()=>U.el('u-pw')?.focus(),200);
+      },600);return true;
+    }
+    try{
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':'$2a$10$8K1p/a0dclxMzA.M3O5ode8E6V3ZdqR5lQJ3H.OZjXFiLPJB.Cj5e'}});
+      const res=await r.json();const json=this._decrypt(res.record?.d,'');
+      const state=JSON.parse(json);SHARE._applyState(state);CALC.run();
+      const b=U.el('save-status-bar');if(b)b.textContent='💾 Geladen: '+(state._desc||id);
+      return true;
+    }catch(e){return false;}
+  },
+  async _unlockUrl(id){
+    const pw=U.el('u-pw')?.value||'',st=U.el('u-status');
+    try{
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':'$2a$10$8K1p/a0dclxMzA.M3O5ode8E6V3ZdqR5lQJ3H.OZjXFiLPJB.Cj5e'}});
+      const res=await r.json();const json=this._decrypt(res.record?.d,pw);
+      if(!json)throw new Error('Falsches Passwort');
+      SHARE._applyState(JSON.parse(json));CALC.run();U.show('cloud-modal',false);
+    }catch(e){st.innerHTML='<div class="alert alert-danger">❌ '+e.message+'</div>';}
+  }
+};
 // Small helper referenced inline
 CALC._calcPKMode=function(){
   const m=U.s('pk-mode');
