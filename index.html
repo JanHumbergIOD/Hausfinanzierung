@@ -971,8 +971,7 @@ const CASHFLOW={
 
       const kg=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kindergeld:s,0);
       const kindK=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kosten:s,0);
-      const energieEinmal=(()=>{  let s=0;  ['wp','pv','bat','mod'].forEach(function(id){    const r=energieRes[id];    if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat) s+=r.nettoKosten;  });  return s;})();const energieRes=window._energieResults||{};const energieEinmal=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat)s+=r.nettoKosten;});return s;})();const energieSpar=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();
-    const einkommen=p1+p2+kg;
+      const energieEinmal=(()=>{  let s=0;  ['wp','pv','bat','mod'].forEach(function(id){    const r=energieRes[id];    if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat) s+=r.nettoKosten;  });  return s;})();const energieRes=window._energieResults||{};    const einkommen=p1+p2+kg;
       const kRate=planData[m-1]?.rate??0;
       const wohn=wohnBase*inf;
       const leben=(lebenBase+kindK)*inf;
@@ -1241,7 +1240,8 @@ const CALC={
     const lzM=PLAN.data.length||240;
     const kRate=PLAN.data[0]?.rate??0;
     const pkM=(()=>{const b=U.n('pk-betrag'),m=U.s('pk-mode');if(!b)return 0;if(m==='monatlich')return U.n('pk-mrate');if(m==='jaehrlich')return U.n('pk-jrate')/12;return 0;})();
-    const wohn=FIXED.sum(WOHNKOSTEN_IDS);
+const energieSpar=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=(window._energieResults||{})[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();
+        const wohn=FIXED.sum(WOHNKOSTEN_IDS);
     const leben=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
     const kindK=KINDER.items.reduce((s,k)=>s+k.kosten,0);
     const extra=EXTRA.totalMonatlich(lzM);
