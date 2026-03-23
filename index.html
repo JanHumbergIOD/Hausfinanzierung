@@ -558,12 +558,12 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 </div>
 
 <script>
-const THEME={cur:'dark',toggle(){this.cur=this.cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',this.cur);const b=document.getElementById('theme-btn');if(b)b.textContent=this.cur==='dark'?'🌙 Dark':'☀️ Light';setTimeout(()=>CHARTS.resize(),50);try{localStorage.setItem('hf_theme',this.cur);}catch(e){}},init(){try{const s=localStorage.getItem('hf_theme');if(s&&s!==this.cur)this.toggle();}catch(e){}}};
+var THEME={cur:'dark',toggle(){this.cur=this.cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',this.cur);const b=document.getElementById('theme-btn');if(b)b.textContent=this.cur==='dark'?'🌙 Dark':'☀️ Light';setTimeout(()=>CHARTS.resize(),50);try{localStorage.setItem('hf_theme',this.cur);}catch(e){}},init(){try{const s=localStorage.getItem('hf_theme');if(s&&s!==this.cur)this.toggle();}catch(e){}}};
 
 /* ============================================================
    MODULE 0 – UTILITIES
    ============================================================ */
-const U = {
+var U = {
   n: id => { const el=document.getElementById(id); if(!el) return 0; const v=parseFloat(el.value); return isFinite(v)?v:0; },
   s: id => document.getElementById(id)?.value ?? '',
   chk: id => document.getElementById(id)?.checked ?? false,
@@ -594,7 +594,7 @@ const U = {
 /* ============================================================
    MODULE 1 – ENGINE
    ============================================================ */
-const ENGINE = {
+var ENGINE = {
   calc(kredit, zp, tp, bindM, sonders=[], bst=[]) {
     const plan=[]; if(kredit<=0) return plan;
     let rs=kredit, curZins=zp;
@@ -634,7 +634,7 @@ const ENGINE = {
 /* ============================================================
    MODULE 2 – SONDERTILGUNGEN
    ============================================================ */
-const ST={
+var ST={
   items:[],
   add(){this.items.push({id:Date.now(),betrag:5000,abJahr:1});this.render();},
   remove(id){this.items=this.items.filter(x=>x.id!==id);this.render();CALC.run();},
@@ -651,7 +651,7 @@ const ST={
 /* ============================================================
    MODULE 3 – BAUSTEINE
    ============================================================ */
-const BST={
+var BST={
   items:[],
   add(){this.items.push({id:Date.now(),zins:3.5,laufzeit:10,tilgung:2,festRate:0,einmal:0});this.render();},
   remove(id){this.items=this.items.filter(x=>x.id!==id);this.render();CALC.run();},
@@ -673,7 +673,7 @@ const BST={
 /* ============================================================
    MODULE 4 – KINDER
    ============================================================ */
-const KINDER={
+var KINDER={
   items:[],
   add(){this.items.push({id:Date.now(),name:`Kind ${this.items.length+1}`,geburtM:12,kosten:500,kindergeld:250});this.render();CALC.runHH();},
   remove(id){this.items=this.items.filter(x=>x.id!==id);this.render();CALC.runHH();},
@@ -696,7 +696,7 @@ const KINDER={
 /* ============================================================
    MODULE 5 – EXTRA AUSGABEN
    ============================================================ */
-const EXTRA={
+var EXTRA={
   items:[],
   add(){this.items.push({id:Date.now(),name:'Neue Ausgabe',betrag:0,rhy:'monatlich'});this.render();},
   remove(id){this.items=this.items.filter(x=>x.id!==id);this.render();CALC.runHH();},
@@ -719,7 +719,7 @@ const EXTRA={
 /* ============================================================
    MODULE 5b – PERSONEN-AUSGABEN & SPLIT
    ============================================================ */
-const PERS={
+var PERS={
   items:[],   // {id, person:1|2, name, betrag, rhy}
   splitActive: false,
   splitP1: 50,
@@ -805,7 +805,7 @@ const PERS={
   }
 };
 
-const SPLIT={
+var SPLIT={
   toggle(){
     PERS.splitActive=!PERS.splitActive;
     U.show('split-section',PERS.splitActive);
@@ -828,7 +828,7 @@ const SPLIT={
    MODULE 6 – FIXED AUSGABEN
    ============================================================ */
 // *** ADD / REMOVE items here to customise fixed costs ***
-const FIXED_DEFS=[
+var FIXED_DEFS=[
   {id:'fa-gs',  label:'Grundsteuer',           val:0,   auto:true,  group:'wohnen'},
   {id:'fa-gv',  label:'Gebäudeversicherung',   val:60,  auto:false, group:'wohnen'},
   {id:'fa-hpfl',label:'Haftpflichtversicherung',val:20, auto:false, group:'wohnen'},
@@ -841,8 +841,8 @@ const FIXED_DEFS=[
   {id:'fa-lm',  label:'Lebensmittel',          val:400, auto:false, group:'leben'},
   {id:'fa-mob', label:'Mobilität',             val:300, auto:false, group:'leben'},
 ];
-const WOHNKOSTEN_IDS=FIXED_DEFS.filter(f=>f.group==='wohnen').map(f=>f.id);
-const FIXED={
+var WOHNKOSTEN_IDS=FIXED_DEFS.filter(f=>f.group==='wohnen').map(f=>f.id);
+var FIXED={
   render(){
     U.el('fixed-ausgaben').innerHTML=FIXED_DEFS.map(f=>`
       <div class="g2" style="margin-bottom:8px;align-items:center">
@@ -857,7 +857,7 @@ const FIXED={
 /* ============================================================
    MODULE 7 – ELTERNGELD (§2 BEEG)
    ============================================================ */
-const ELTERNGELD={
+var ELTERNGELD={
   calc(nettoM){
     if(nettoM<=0) return{betrag:300,info:'Mindest-Elterngeld: 300 €/M'};
     let f;
@@ -873,7 +873,7 @@ const ELTERNGELD={
 /* ============================================================
    MODULE 8 – CHARTS
    ============================================================ */
-const CHARTS={
+var CHARTS={
   cache:{},
   destroy(id){if(this.cache[id]){this.cache[id].destroy();delete this.cache[id];}},
   _base(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{ticks:{color:'#8aa8c5',maxTicksLimit:14},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}; },
@@ -900,7 +900,7 @@ const CHARTS={
 /* ============================================================
    MODULE 9 – TILGUNGSPLAN
    ============================================================ */
-const PLAN={
+var PLAN={
   view:'mon', data:[],
   setView(v){this.view=v;U.el('tv-mon').classList.toggle('active',v==='mon');U.el('tv-yr').classList.toggle('active',v==='yr');this.render(this.data);},
   render(plan){
@@ -931,7 +931,7 @@ const PLAN={
 /* ============================================================
    MODULE 10 – CASHFLOW
    ============================================================ */
-const CASHFLOW={
+var CASHFLOW={
   view:'mon', _rows:[],
   setView(v){this.view=v;U.el('cf-mon').classList.toggle('active',v==='mon');U.el('cf-yr').classList.toggle('active',v==='yr');this.render();},
 
@@ -1074,7 +1074,7 @@ const CASHFLOW={
 /* ============================================================
    MODULE 11 – MAIN CALC ORCHESTRATOR
    ============================================================ */
-const CALC={
+var CALC={
   _lock:false,
   _lastGemeinsam:0,
   _lastIncome:null,
@@ -1393,7 +1393,7 @@ const energieSpar=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){con
    Import = paste that text back → restore state
    PDF    = open new window with full HTML → print
    ============================================================ */
-const SHARE = {
+var SHARE = {
   _collect() {
     const state = {
       inputs: {}, st: [], bst: [], kinder: [], extra: [],
@@ -1595,7 +1595,7 @@ const SHARE = {
 /* ============================================================
    ZINSRISIKO MODULE
    ============================================================ */
-const ZINSRISIKO = {
+var ZINSRISIKO = {
   render(plan, kredit) {
     const el = document.getElementById('zr-grid');
     if (!el) return;
@@ -1649,7 +1649,7 @@ const ZINSRISIKO = {
 /* ============================================================
    FINANZCHECK SCORE MODULE
    ============================================================ */
-const SCORE = {
+var SCORE = {
   factors: [
     { key:'ek',    label:'Eigenkapitalquote',  max:20, tip:'Ziel: >20% des Kaufpreises' },
     { key:'wq',    label:'Wohnkostenquote',     max:20, tip:'Ziel: <30% des Einkommens' },
@@ -1737,7 +1737,7 @@ const SCORE = {
 /* ============================================================
    ENERGIE MODULE
    ============================================================ */
-const ENERGIE = {
+var ENERGIE = {
   // Richtwerte Förderquoten BEG 2024
   FOERDERUNG: {
     wp:  { basis: 0.30, bonus_gas: 0.05, bonus_low_income: 0.05, max: 0.70, maxBetrag: 30000 },
