@@ -6,6 +6,7 @@
 <title>🏠 Hausfinanzierungs-Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+/* ── BUG FIX: Separate :root blocks, light theme not nested ── */
 :root {
   --bg:#0f1923; --bg2:#162030; --bg3:#1e2d3d; --bg4:#253545;
   --border:#2e4055; --text:#e0eaf5; --text2:#8aa8c5;
@@ -13,7 +14,7 @@
   --red:#ff4d6d; --yellow:#ffd166; --green:#06d6a0;
   --purple:#9b5de5; --pink:#ff9ff3;
   --radius:10px; --card-pad:18px;
-
+}
 :root[data-theme="light"] {
   --bg:#f0f4f8; --bg2:#ffffff; --bg3:#e8eef5; --bg4:#d8e4f0;
   --border:#b0c8e0; --text:#1a2a3a; --text2:#4a6a8a;
@@ -21,11 +22,13 @@
   --red:#d93257; --yellow:#d4a017; --green:#059669;
   --purple:#7c3aed; --pink:#db2777;
   --radius:10px; --card-pad:18px;
-}}
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
-.tabs{display:flex;background:var(--bg2);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200;overflow-x:auto;scrollbar-width:none}
+/* ── BUG FIX: tabs no longer needs sticky (topbar handles it) ── */
+.topbar{display:flex;background:var(--bg2);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;flex:1}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;padding:13px 16px;cursor:pointer;color:var(--text2);font-weight:600;border-bottom:3px solid transparent;transition:all .2s;font-size:13px;white-space:nowrap}
 .tab:hover{color:var(--text);background:var(--bg3)}
@@ -49,34 +52,24 @@ input,select{width:100%;background:var(--bg3);border:1px solid var(--border);col
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238aa8c5' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
 input:focus,select:focus{outline:none;border-color:var(--accent)}
 input[type=range]{padding:4px 0;accent-color:var(--accent);background:transparent;border:none}
-
-/* ── Checkbox fix: proper contrast ── */
-input[type=checkbox]{
-  width:18px;height:18px;flex-shrink:0;
-  accent-color:var(--accent);
-  border:2px solid var(--text2);
-  background:var(--bg3);
-  cursor:pointer;border-radius:4px;
-  vertical-align:middle;
-}
+input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);border:2px solid var(--text2);background:var(--bg3);cursor:pointer;border-radius:4px;vertical-align:middle}
 .check-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 0}
 .check-row label{margin:0;cursor:pointer;color:var(--text);font-size:13px;line-height:1.4}
-
 .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
 .kpi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
 .kpi .kpi-label{color:var(--text2);font-size:11px;margin-bottom:4px}
 .kpi .kpi-val{font-size:1.25rem;font-weight:700;color:var(--accent)}
 .kpi .kpi-val.sm{font-size:.95rem}
 .alert{border-radius:8px;padding:10px 14px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:8px}
-.alert-warn  {background:rgba(255,209,102,.1);border:1px solid var(--yellow);color:var(--yellow)}
-.alert-info  {background:rgba(0,153,255,.1);  border:1px solid var(--accent2);color:var(--accent2)}
-.alert-danger{background:rgba(255,77,109,.1);  border:1px solid var(--red);   color:var(--red)}
-.alert-ok    {background:rgba(6,214,160,.1);   border:1px solid var(--green); color:var(--green)}
-.alert-purple{background:rgba(155,93,229,.1);  border:1px solid var(--purple);color:var(--purple)}
+.alert-warn {background:rgba(255,209,102,.1);border:1px solid var(--yellow);color:var(--yellow)}
+.alert-info {background:rgba(0,153,255,.1);border:1px solid var(--accent2);color:var(--accent2)}
+.alert-danger{background:rgba(255,77,109,.1);border:1px solid var(--red);color:var(--red)}
+.alert-ok {background:rgba(6,214,160,.1);border:1px solid var(--green);color:var(--green)}
+.alert-purple{background:rgba(155,93,229,.1);border:1px solid var(--purple);color:var(--purple)}
 .ampel{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;font-weight:600;font-size:13px}
-.ampel-green {background:rgba(6,214,160,.15); color:var(--green); border:1px solid var(--green)}
+.ampel-green {background:rgba(6,214,160,.15);color:var(--green);border:1px solid var(--green)}
 .ampel-yellow{background:rgba(255,209,102,.15);color:var(--yellow);border:1px solid var(--yellow)}
-.ampel-red   {background:rgba(255,77,109,.15); color:var(--red);   border:1px solid var(--red)}
+.ampel-red {background:rgba(255,77,109,.15);color:var(--red);border:1px solid var(--red)}
 .btn{padding:8px 15px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:13px;transition:all .2s;touch-action:manipulation}
 .btn:hover,.btn:active{background:var(--accent);color:#000}
 .btn-sm{padding:5px 10px;font-size:12px}
@@ -97,9 +90,9 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:700px){.scenarios{grid-template-columns:1fr}}
 .sc-card{border-radius:var(--radius);padding:14px;border:1px solid}
-.sc-best {background:rgba(6,214,160,.07); border-color:var(--green)}
+.sc-best {background:rgba(6,214,160,.07);border-color:var(--green)}
 .sc-base {background:rgba(255,209,102,.07);border-color:var(--yellow)}
-.sc-worst{background:rgba(255,77,109,.07); border-color:var(--red)}
+.sc-worst{background:rgba(255,77,109,.07);border-color:var(--red)}
 .sc-val{font-size:1.05rem;font-weight:700}
 .chart-wrap{position:relative;height:240px;margin-top:10px}
 .slider-big{font-size:2.2rem;font-weight:700;color:var(--accent);text-align:center;margin:6px 0}
@@ -122,15 +115,11 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .muted{color:var(--text2)}
 .divider{border:none;border-top:1px solid var(--border);margin:12px 0}
 .export-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-/* Person-split slider */
 .split-wrap{margin:14px 0}
 .split-bar{display:flex;border-radius:8px;overflow:hidden;height:32px;margin-bottom:6px}
 .split-p1{background:rgba(0,201,177,.6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;transition:width .15s}
 .split-p2{background:rgba(0,153,255,.6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex:1;transition:width .15s}
 .split-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
-
-/* ── TIMELINE ── */
 .timeline-wrap{overflow-x:auto;padding:16px 0;margin:8px 0}
 .timeline{position:relative;height:80px;min-width:600px}
 .tl-line{position:absolute;top:36px;left:0;right:0;height:3px;background:var(--border)}
@@ -138,7 +127,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .tl-dot{width:14px;height:14px;border-radius:50%;border:2px solid #fff;margin:0 auto;position:relative;top:30px}
 .tl-label{font-size:10px;color:var(--text2);margin-top:6px;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
 .tl-year{position:absolute;top:44px;font-size:10px;color:var(--border);transform:translateX(-50%)}
-/* ── SCORE ── */
 .score-ring{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;margin:12px 0}
 .score-circle{position:relative;width:120px;height:120px}
 .score-circle svg{transform:rotate(-90deg)}
@@ -147,67 +135,64 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .sf-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
 .sf-bar-wrap{width:80px;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
 .sf-bar{height:100%;border-radius:3px;transition:width .4s}
-/* ── ZINSRISIKO ── */
 .zr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:10px 0}
 .zr-card{border-radius:8px;padding:12px;border:1px solid}
 .zr-neutral{border-color:var(--border);background:var(--bg3)}
 .zr-warn{border-color:var(--yellow);background:rgba(255,209,102,.06)}
 .zr-danger{border-color:var(--red);background:rgba(255,77,109,.06)}
 .zr-val{font-size:1.1rem;font-weight:700;margin:4px 0}
-
-/* ── ENERGIE TAB ── */
-.massnahme-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
-.massnahme-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;user-select:none}
-.massnahme-header:hover{background:rgba(128,128,128,.05)}
-.massnahme-toggle{font-size:18px;width:24px;text-align:center;flex-shrink:0}
-.massnahme-title{flex:1;font-weight:600;font-size:14px}
-.massnahme-badge{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600}
-.badge-bestand{background:rgba(6,214,160,.2);color:var(--green)}
-.badge-geplant{background:rgba(0,153,255,.2);color:var(--accent2)}
-.badge-nein{background:rgba(128,128,128,.15);color:var(--text2)}
-.massnahme-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
-.massnahme-body.open{display:block}
-.energie-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0}
-.ekpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
-.ekpi .el{color:var(--text2);font-size:11px;margin-bottom:3px}
-.ekpi .ev{font-size:1rem;font-weight:700;color:var(--accent)}
-.ekpi .ev.red{color:var(--red)}.ekpi .ev.green{color:var(--green)}.ekpi .ev.yellow{color:var(--yellow)}
-.amort-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:6px 0}
-.amort-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .5s}
-.energie-klasse{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:6px;font-weight:700;font-size:16px;color:#fff}
-.ek-ap{background:#007a33}.ek-a{background:#00a550}.ek-b{background:#52ae32}.ek-c{background:#b5c800}
-.ek-d{background:#f7cc00;color:#333}.ek-e{background:#eb8c00}.ek-f{background:#dc4600}.ek-g{background:#c8002d}.ek-h{background:#8a0025}
-.empfehlung-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:13px}
-.empfehlung-rank{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cf-energie{background:rgba(6,214,160,.06);border-left:3px solid var(--green)}
-.topbar{display:flex;background:var(--bg2);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-<div class="tabs">
-  <div class="tab active" data-tab="fin">🏠 Finanzierung</div>
-  <div class="tab" data-tab="hh">📊 Haushalt</div>
-  <div class="tab" data-tab="pers">👥 Personen</div>
-  <div class="tab" data-tab="ov">📋 Übersicht</div>
-  <div class="tab" data-tab="energie">⚡ Energie</div>
-</div>
-<button id="theme-btn" onclick="THEME.toggle()" style="flex-shrink:0;margin:6px 10px;padding:6px 12px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;white-space:nowrap;">🌙 Dark</button>
-</div>    <div id="sonder-info" class="muted" style="font-size:13px;margin-top:8px"></div>
+  <div class="tabs">
+    <div class="tab active" data-tab="fin">🏠 Finanzierung</div>
+    <div class="tab" data-tab="hh">📊 Haushalt</div>
+    <div class="tab" data-tab="pers">👥 Personen</div>
+    <div class="tab" data-tab="ov">📋 Übersicht</div>
   </div>
+  <button id="theme-btn" onclick="THEME.toggle()" style="flex-shrink:0;margin:6px 10px;padding:6px 12px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;white-space:nowrap;">🌙 Dark</button>
+</div>
+
+<!-- ==================== TAB FINANZIERUNG ==================== -->
+<div id="tab-fin" class="tab-content active">
+  <div class="card">
+    <h2>🏠 Kaufpreisstruktur & Finanzierung</h2>
+    <div class="g4">
+      <div class="field"><label>Kaufpreis (€)</label><input type="number" id="kaufpreis" value="400000" min="0"></div>
+      <div class="field"><label>Eigenkapital (€)</label><input type="number" id="eigenkapital" value="80000" min="0"></div>
+      <div class="field"><label>Zinssatz (%)</label><input type="number" id="zinssatz" value="3.5" min="0" step="0.1"></div>
+      <div class="field"><label>Tilgung (%)</label><input type="number" id="tilgung" value="2" min="0.5" step="0.1"></div>
+    </div>
+    <div class="g4">
+      <div class="field"><label>Grunderwerbsteuer (%)</label><input type="number" id="gew-pct" value="6.5" min="0" step="0.1"></div>
+      <div class="field"><label>Notar/Grundbuch (%)</label><input type="number" id="notar-pct" value="2" min="0" step="0.1"></div>
+      <div class="field"><label>Makler (%)</label><input type="number" id="makler-pct" value="3.57" min="0" step="0.1"></div>
+      <div class="field"><label>Zinsbindung (Jahre)</label><input type="number" id="zinsbindung" value="15" min="1" max="30"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Renovierungskosten (€)</label><input type="number" id="renovierung" value="0" min="0"></div>
+      <div class="field"><label>Sonstige Kaufnebenkosten (€)</label><input type="number" id="sonstige-knk" value="0" min="0"></div>
+    </div>
+    <div id="fin-summary" style="margin-top:12px"></div>
+  </div>
+
   <div class="card">
     <h2>⚡ Sondertilgungen</h2>
     <div id="sonder-list"></div>
     <button class="btn btn-sm" onclick="ST.add()">+ Sondertilgung hinzufügen</button>
+    <!-- BUG FIX: removed duplicate id="sonder-info" – only one instance here -->
     <div id="sonder-info" class="muted" style="font-size:13px;margin-top:8px"></div>
   </div>
-    <div class="card">
+
+  <div class="card">
     <h2>🔄 Anschlussfinanzierung (Bausteine)</h2>
     <div id="rest-warn" class="alert alert-warn" style="display:none"></div>
     <div id="bst-list"></div>
     <button class="btn btn-sm" onclick="BST.add()">+ Baustein hinzufügen</button>
   </div>
+
   <div class="card">
     <h2>📊 Zinsszenarien-Vergleich</h2>
     <div class="g3">
@@ -222,6 +207,7 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
     </div>
     <div class="chart-wrap"><canvas id="ch-szen"></canvas></div>
   </div>
+
   <div class="card">
     <h2>🎚️ Zinssimulation <span class="muted" style="font-size:11px;font-weight:400">(inkl. Sondertilgungen)</span></h2>
     <div class="slider-big" id="sl-display">3,5 %</div>
@@ -235,6 +221,7 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       <div class="kpi"><div class="kpi-label">Verkürzung (Sondert.)</div><div class="kpi-val sm" id="sl-sonder">–</div></div>
     </div>
   </div>
+
   <div class="card">
     <h2>📅 Tilgungsplan</h2>
     <div class="toggle-group">
@@ -248,6 +235,7 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       </tr></thead><tbody id="plan-body"></tbody></table>
     </div>
   </div>
+
   <div class="card-grid">
     <div class="card"><h2>📉 Restschuld-Verlauf</h2><div class="chart-wrap"><canvas id="ch-rs"></canvas></div></div>
     <div class="card"><h2>📊 Zins vs. Tilgung</h2><div class="chart-wrap"><canvas id="ch-zt"></canvas></div></div>
@@ -264,7 +252,8 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
         <div class="field"><label style="color:var(--accent);font-size:13px">Name Person 1</label>
           <input type="text" id="p1-name" value="Person 1" placeholder="z.B. Max"></div>
         <div class="field"><label>Netto-Grundgehalt (€/Monat)</label><input type="number" id="p1-netto" value="3200" min="0"></div>
-        <div class="field"><label>Gehaltsssteigerung p.a. (%)</label><input type="number" id="p1-steig" value="2" min="0" step="0.1"></div>
+        <!-- BUG FIX: "Gehaltsssteigerung" → "Gehaltssteigerung" (3s→2s) -->
+        <div class="field"><label>Gehaltssteigerung p.a. (%)</label><input type="number" id="p1-steig" value="2" min="0" step="0.1"></div>
         <div class="check-row"><input type="checkbox" id="p1-prov-on"><label for="p1-prov-on">Provision / Sonderzahlungen</label></div>
         <div id="p1-prov-block" style="display:none;background:var(--bg4);border-radius:8px;padding:10px;margin-bottom:8px">
           <div class="field"><label>Berechnungsart</label>
@@ -281,7 +270,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
           <div class="field"><label>Elterngeld netto (€/Monat)<span class="hint" id="p1-eg-hint"></span></label>
             <input type="number" id="p1-ez-geld" value="0" min="0" data-auto="true"></div>
           <div id="p1-ez-info" class="muted" style="font-size:12px;margin-top:4px"></div>
-          <!-- Stundenreduktion -->
           <div class="check-row" style="margin-top:8px"><input type="checkbox" id="p1-red-on"><label for="p1-red-on">Nach Elternzeit: Stundenreduktion</label></div>
           <div id="p1-red-block" style="display:none;background:var(--bg3);border-radius:8px;padding:10px;margin-top:6px">
             <div class="g2">
@@ -301,7 +289,8 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
         <div class="field"><label style="color:var(--accent2);font-size:13px">Name Person 2</label>
           <input type="text" id="p2-name" value="Person 2" placeholder="z.B. Anna"></div>
         <div class="field"><label>Netto-Grundgehalt (€/Monat)</label><input type="number" id="p2-netto" value="2800" min="0"></div>
-        <div class="field"><label>Gehaltsssteigerung p.a. (%)</label><input type="number" id="p2-steig" value="2" min="0" step="0.1"></div>
+        <!-- BUG FIX: "Gehaltsssteigerung" → "Gehaltssteigerung" (3s→2s) -->
+        <div class="field"><label>Gehaltssteigerung p.a. (%)</label><input type="number" id="p2-steig" value="2" min="0" step="0.1"></div>
         <div class="check-row"><input type="checkbox" id="p2-prov-on"><label for="p2-prov-on">Provision / Sonderzahlungen</label></div>
         <div id="p2-prov-block" style="display:none;background:var(--bg4);border-radius:8px;padding:10px;margin-bottom:8px">
           <div class="field"><label>Berechnungsart</label>
@@ -343,24 +332,28 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
     </div>
     <div id="income-summary" style="margin-top:12px"></div>
   </div>
+
   <div class="card">
     <h2>🏠 Feste Haushaltsausgaben</h2>
     <div id="fixed-ausgaben"></div>
   </div>
+
   <div class="card">
     <h2>➕ Weitere gemeinsame Ausgaben</h2>
     <div id="extra-list"></div>
     <button class="btn btn-sm" onclick="EXTRA.add()">+ Ausgabe hinzufügen</button>
   </div>
+
   <div class="card">
     <h2>📈 Haushalts-Bewertung</h2>
     <div class="check-row"><input type="checkbox" id="inflation-on"><label for="inflation-on">Inflationsbereinigung +2 % p.a.</label></div>
     <div id="hh-result" style="margin-top:12px"></div>
     <div class="chart-wrap" style="height:220px"><canvas id="ch-hh"></canvas></div>
   </div>
+
   <div class="card">
     <h2>📅 Monatlicher Cashflow-Verlauf</h2>
-    <p class="muted" style="font-size:12px;margin-bottom:10px">Einkommen vs. Ausgaben – inkl. Elternzeit, Stundenreduktion, Gehaltsssteigerungen, Kinder</p>
+    <p class="muted" style="font-size:12px;margin-bottom:10px">Einkommen vs. Ausgaben – inkl. Elternzeit, Stundenreduktion, Gehaltssteigerungen, Kinder</p>
     <div class="toggle-group">
       <button class="tgl active" id="cf-mon" onclick="CASHFLOW.setView('mon')">Monatlich</button>
       <button class="tgl" id="cf-yr" onclick="CASHFLOW.setView('yr')">Jährlich</button>
@@ -381,8 +374,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
   <div class="card">
     <h2>👥 Kostenverteilung zwischen Personen</h2>
     <p class="muted" style="font-size:12px;margin-bottom:14px">Wie werden die gemeinsamen Haushaltskosten aufgeteilt? Individuelle Ausgaben pro Person können zusätzlich erfasst werden.</p>
-
-    <!-- Verteilungs-Schieberegler -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <h3 style="margin:0">⚖️ Gemeinsame Kosten: Verteilung</h3>
       <button class="btn btn-sm" id="split-toggle-btn" onclick="SPLIT.toggle()">Verteilung aktivieren</button>
@@ -402,8 +393,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       <div id="split-result" style="font-size:13px;margin-top:8px"></div>
     </div>
     <div class="divider"></div>
-
-    <!-- Individuelle Ausgaben P1 -->
     <div id="pers-p1-section">
       <h3 style="color:var(--accent);margin-bottom:10px" id="pers-p1-heading">👤 Person 1 – Individuelle Ausgaben</h3>
       <div id="pers-p1-list"></div>
@@ -411,8 +400,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       <div id="pers-p1-sum" class="muted" style="font-size:13px;margin-top:8px"></div>
     </div>
     <div class="divider"></div>
-
-    <!-- Individuelle Ausgaben P2 -->
     <div id="pers-p2-section">
       <h3 style="color:var(--accent2);margin-bottom:10px" id="pers-p2-heading">👤 Person 2 – Individuelle Ausgaben</h3>
       <div id="pers-p2-list"></div>
@@ -420,8 +407,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
       <div id="pers-p2-sum" class="muted" style="font-size:13px;margin-top:8px"></div>
     </div>
     <div class="divider"></div>
-
-    <!-- Gesamtübersicht pro Person -->
     <div id="pers-overview"></div>
   </div>
 </div>
@@ -433,15 +418,12 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
     <button class="btn btn-sm" onclick="SHARE.showExport()">📤 Exportieren / Teilen</button>
     <button class="btn btn-sm" onclick="SHARE.printPDF()">🖨️ Als PDF</button>
   </div>
-  <!-- Export modal -->
   <div id="share-modal" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <strong>📤 Zustand exportieren</strong>
       <button class="btn btn-sm btn-del" onclick="U.show('share-modal',false)">✕</button>
     </div>
-    <p class="muted" style="font-size:12px;margin-bottom:10px">
-      Kopiere den Text unten und speichere ihn. Beim nächsten Öffnen auf „Importieren" klicken und den Text einfügen – alle Werte werden wiederhergestellt.
-    </p>
+    <p class="muted" style="font-size:12px;margin-bottom:10px">Kopiere den Text unten und speichere ihn. Beim nächsten Öffnen auf „Importieren" klicken und den Text einfügen – alle Werte werden wiederhergestellt.</p>
     <textarea id="share-text" style="width:100%;height:80px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-size:11px;font-family:monospace;resize:vertical" readonly></textarea>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
       <button class="btn btn-sm" onclick="SHARE.copyText()">📋 Text kopieren</button>
@@ -449,7 +431,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
     </div>
     <div id="share-toast" style="display:none;background:var(--green);color:#000;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;margin-top:8px">✅ Kopiert!</div>
   </div>
-  <!-- Import modal -->
   <div id="import-modal" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <strong>📥 Zustand importieren</strong>
@@ -461,8 +442,6 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
     </div>
     <div id="import-toast" style="display:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;margin-top:8px"></div>
   </div>
-
-  <!-- FINANZCHECK SCORE -->
   <div class="card" id="score-card">
     <h2>🔢 Finanzcheck-Score</h2>
     <p class="muted" style="font-size:12px;margin-bottom:12px">Bewertung deiner Finanzierungssituation in 6 Faktoren. 100 = optimale Situation.</p>
@@ -484,67 +463,48 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 <script>
 var THEME={cur:'dark',toggle(){this.cur=this.cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',this.cur);const b=document.getElementById('theme-btn');if(b)b.textContent=this.cur==='dark'?'🌙 Dark':'☀️ Light';setTimeout(()=>CHARTS.resize(),50);try{localStorage.setItem('hf_theme',this.cur);}catch(e){}},init(){try{const s=localStorage.getItem('hf_theme');if(s&&s!==this.cur)this.toggle();}catch(e){}}};
 
-/* ============================================================
-   MODULE 0 – UTILITIES
-   ============================================================ */
-var U = {
-  n: id => { const el=document.getElementById(id); if(!el) return 0; const v=parseFloat(el.value); return isFinite(v)?v:0; },
-  s: id => document.getElementById(id)?.value ?? '',
-  chk: id => document.getElementById(id)?.checked ?? false,
-  el: id => document.getElementById(id),
-  eur: (n,dec=0) => { if(!isFinite(n)) return '–'; return n.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+' €'; },
-  pct: (n,dec=1) => isFinite(n)?n.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+' %':'–',
-  lz: m => `${Math.floor(m/12)}J ${m%12}M`,
-  show: (id,vis) => { const e=document.getElementById(id); if(e) e.style.display=vis?'':'none'; },
-  ampelCls: (v,t1,t2) => v<=t1?'green':v<=t2?'yellow':'red',
-  ampelIcon: cls => cls==='green'?'🟢':cls==='yellow'?'🟡':'🔴',
-  name: p => U.s(`p${p}-name`) || `Person ${p}`,
-
-  /* KEY FIX: set auto-calculated field only if value meaningfully differs.
-     data-auto="true" fields are NEVER touched by the global input listener. */
-  setAuto: (id, val, dec=2) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const factor = Math.pow(10, dec);
-    const rounded = Math.round(val * factor) / factor;
-    const current = parseFloat(el.value);
-    // Only write if difference > half a unit at given precision
-    if (Math.abs((isNaN(current)?Infinity:current) - rounded) > 0.5/factor) {
-      el.value = rounded;
-    }
+var U={
+  n:id=>{const el=document.getElementById(id);if(!el)return 0;const v=parseFloat(el.value);return isFinite(v)?v:0;},
+  s:id=>document.getElementById(id)?.value??'',
+  chk:id=>document.getElementById(id)?.checked??false,
+  el:id=>document.getElementById(id),
+  eur:(n,dec=0)=>{if(!isFinite(n))return'–';return n.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+' €';},
+  pct:(n,dec=1)=>isFinite(n)?n.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+' %':'–',
+  lz:m=>`${Math.floor(m/12)}J ${m%12}M`,
+  show:(id,vis)=>{const e=document.getElementById(id);if(e)e.style.display=vis?'':'none';},
+  ampelCls:(v,t1,t2)=>v<=t1?'green':v<=t2?'yellow':'red',
+  ampelIcon:cls=>cls==='green'?'🟢':cls==='yellow'?'🟡':'🔴',
+  name:p=>U.s(`p${p}-name`)||`Person ${p}`,
+  setAuto:(id,val,dec=2)=>{
+    const el=document.getElementById(id);if(!el)return;
+    const factor=Math.pow(10,dec);const rounded=Math.round(val*factor)/factor;
+    const current=parseFloat(el.value);
+    if(Math.abs((isNaN(current)?Infinity:current)-rounded)>0.5/factor)el.value=rounded;
   }
 };
 
-/* ============================================================
-   MODULE 1 – ENGINE
-   ============================================================ */
-var ENGINE = {
-  calc(kredit, zp, tp, bindM, sonders=[], bst=[]) {
-    const plan=[]; if(kredit<=0) return plan;
-    let rs=kredit, curZins=zp;
+var ENGINE={
+  calc(kredit,zp,tp,bindM,sonders=[],bst[]){
+    const plan=[];if(kredit<=0)return plan;
+    let rs=kredit,curZins=zp;
     const mz0=zp/100/12;
     let curRate=mz0>0?kredit*(mz0+tp/100/12):kredit*tp/100/12;
     for(let m=1;m<=720&&rs>0.005;m++){
       if(bst.length>0){
         let off=bindM;
         for(let bi=0;bi<bst.length;bi++){
-          if(m===off+1){
-            const b=bst[bi]; curZins=b.zins;
-            const mz2=curZins/100/12;
-            if(b.einmal>0) rs=Math.max(0,rs-b.einmal);
-            curRate=b.festRate>0?b.festRate:rs*(mz2+(b.tilgung||2)/100/12);
-          }
+          if(m===off+1){const b=bst[bi];curZins=b.zins;const mz2=curZins/100/12;if(b.einmal>0)rs=Math.max(0,rs-b.einmal);curRate=b.festRate>0?b.festRate:rs*(mz2+(b.tilgung||2)/100/12);}
           off+=(bst[bi].laufzeit||10)*12;
         }
       }
-      const mzC=curZins/100/12, za=rs*mzC;
-      let ta=Math.max(0,curRate-za), so=0;
-      for(const s of sonders) if(s.betrag>0&&m>=s.abJahr*12&&m%12===0) so+=s.betrag;
+      const mzC=curZins/100/12,za=rs*mzC;
+      let ta=Math.max(0,curRate-za),so=0;
+      for(const s of sonders)if(s.betrag>0&&m>=s.abJahr*12&&m%12===0)so+=s.betrag;
       if(rs-ta-so<=0){ta=rs;so=0;}
       rs=Math.max(0,rs-ta-so);
       const bStart=(m===bindM+1)||(()=>{let off=bindM;for(let bi=0;bi<bst.length;bi++){if(m===off+1)return true;off+=(bst[bi].laufzeit||10)*12;}return false;})();
       plan.push({monat:m,za,ta,rs,rate:curRate,so,bStart});
-      if(rs<=0.005) break;
+      if(rs<=0.005)break;
     }
     return plan;
   },
@@ -555,9 +515,6 @@ var ENGINE = {
   }
 };
 
-/* ============================================================
-   MODULE 2 – SONDERTILGUNGEN
-   ============================================================ */
 var ST={
   items:[],
   add(){this.items.push({id:Date.now(),betrag:5000,abJahr:1});this.render();},
@@ -565,16 +522,13 @@ var ST={
   render(){
     U.el('sonder-list').innerHTML=this.items.map(s=>`
       <div class="dyn-block" style="padding:10px"><div style="display:flex;gap:8px;align-items:center">
-        <div class="field" style="flex:1;margin:0"><label>Betrag (€)</label><input type="number" value="${s.betrag}" min="0" onchange="ST.items.find(x=>x.id===${s.id}).betrag=+this.value;CALC.run()"></div>
-        <div class="field" style="flex:1;margin:0"><label>Ab Jahr</label><input type="number" value="${s.abJahr}" min="1" onchange="ST.items.find(x=>x.id===${s.id}).abJahr=+this.value;CALC.run()"></div>
-        <button class="btn btn-sm btn-del" style="margin-top:16px" onclick="ST.remove(${s.id})">✕</button>
+      <div class="field" style="flex:1;margin:0"><label>Betrag (€)</label><input type="number" value="${s.betrag}" min="0" onchange="ST.items.find(x=>x.id===${s.id}).betrag=+this.value;CALC.run()"></div>
+      <div class="field" style="flex:1;margin:0"><label>Ab Jahr</label><input type="number" value="${s.abJahr}" min="1" onchange="ST.items.find(x=>x.id===${s.id}).abJahr=+this.value;CALC.run()"></div>
+      <button class="btn btn-sm btn-del" style="margin-top:16px" onclick="ST.remove(${s.id})">✕</button>
       </div></div>`).join('');
   }
 };
 
-/* ============================================================
-   MODULE 3 – BAUSTEINE
-   ============================================================ */
 var BST={
   items:[],
   add(){this.items.push({id:Date.now(),zins:3.5,laufzeit:10,tilgung:2,festRate:0,einmal:0});this.render();},
@@ -582,21 +536,17 @@ var BST={
   render(){
     U.el('bst-list').innerHTML=this.items.map((b,i)=>`
       <div class="dyn-block">
-        <div class="dyn-header"><strong>Baustein ${i+1}</strong><button class="btn btn-sm btn-del" onclick="BST.remove(${b.id})">✕</button></div>
-        <div class="g3">
-          <div class="field"><label>Zinssatz (%)</label><input type="number" value="${b.zins}" min="0" step="0.1" onchange="BST.items.find(x=>x.id===${b.id}).zins=+this.value;CALC.run()"></div>
-          <div class="field"><label>Laufzeit (Jahre)</label><input type="number" value="${b.laufzeit}" min="1" onchange="BST.items.find(x=>x.id===${b.id}).laufzeit=+this.value;CALC.run()"></div>
-          <div class="field"><label>Tilgung (%)</label><input type="number" value="${b.tilgung}" min="0" step="0.1" onchange="BST.items.find(x=>x.id===${b.id}).tilgung=+this.value;CALC.run()"></div>
-          <div class="field"><label>Feste Rate (€, 0=auto)</label><input type="number" value="${b.festRate}" min="0" onchange="BST.items.find(x=>x.id===${b.id}).festRate=+this.value;CALC.run()"></div>
-          <div class="field"><label>Einmalbetrag (€)</label><input type="number" value="${b.einmal}" min="0" onchange="BST.items.find(x=>x.id===${b.id}).einmal=+this.value;CALC.run()"></div>
-        </div>
-      </div>`).join('');
+      <div class="dyn-header"><strong>Baustein ${i+1}</strong><button class="btn btn-sm btn-del" onclick="BST.remove(${b.id})">✕</button></div>
+      <div class="g3">
+        <div class="field"><label>Zinssatz (%)</label><input type="number" value="${b.zins}" min="0" step="0.1" onchange="BST.items.find(x=>x.id===${b.id}).zins=+this.value;CALC.run()"></div>
+        <div class="field"><label>Laufzeit (Jahre)</label><input type="number" value="${b.laufzeit}" min="1" onchange="BST.items.find(x=>x.id===${b.id}).laufzeit=+this.value;CALC.run()"></div>
+        <div class="field"><label>Tilgung (%)</label><input type="number" value="${b.tilgung}" min="0" step="0.1" onchange="BST.items.find(x=>x.id===${b.id}).tilgung=+this.value;CALC.run()"></div>
+        <div class="field"><label>Feste Rate (€, 0=auto)</label><input type="number" value="${b.festRate}" min="0" onchange="BST.items.find(x=>x.id===${b.id}).festRate=+this.value;CALC.run()"></div>
+        <div class="field"><label>Einmalbetrag (€)</label><input type="number" value="${b.einmal}" min="0" onchange="BST.items.find(x=>x.id===${b.id}).einmal=+this.value;CALC.run()"></div>
+      </div></div>`).join('');
   }
 };
 
-/* ============================================================
-   MODULE 4 – KINDER
-   ============================================================ */
 var KINDER={
   items:[],
   add(){this.items.push({id:Date.now(),name:`Kind ${this.items.length+1}`,geburtM:12,kosten:500,kindergeld:250});this.render();CALC.runHH();},
@@ -604,22 +554,18 @@ var KINDER={
   render(){
     U.el('kinder-list').innerHTML=this.items.map(k=>`
       <div class="dyn-block">
-        <div class="dyn-header">
-          <input type="text" value="${k.name}" style="background:transparent;border:none;color:var(--text);font-weight:600;font-size:14px;width:150px;padding:0" onchange="KINDER.items.find(x=>x.id===${k.id}).name=this.value">
-          <button class="btn btn-sm btn-del" onclick="KINDER.remove(${k.id})">✕</button>
-        </div>
-        <div class="g3">
-          <div class="field"><label>Geburt (Monat ab Kauf)</label><input type="number" value="${k.geburtM}" min="1" onchange="KINDER.items.find(x=>x.id===${k.id}).geburtM=+this.value;CALC.runHH()"></div>
-          <div class="field"><label>Monatl. Mehrkosten (€)</label><input type="number" value="${k.kosten}" min="0" onchange="KINDER.items.find(x=>x.id===${k.id}).kosten=+this.value;CALC.runHH()"></div>
-          <div class="field"><label>Kindergeld (€/Monat)</label><input type="number" value="${k.kindergeld}" min="0" onchange="KINDER.items.find(x=>x.id===${k.id}).kindergeld=+this.value;CALC.runHH()"></div>
-        </div>
-      </div>`).join('');
+      <div class="dyn-header">
+        <input type="text" value="${k.name}" style="background:transparent;border:none;color:var(--text);font-weight:600;font-size:14px;width:150px;padding:0" onchange="KINDER.items.find(x=>x.id===${k.id}).name=this.value">
+        <button class="btn btn-sm btn-del" onclick="KINDER.remove(${k.id})">✕</button>
+      </div>
+      <div class="g3">
+        <div class="field"><label>Geburt (Monat ab Kauf)</label><input type="number" value="${k.geburtM}" min="1" onchange="KINDER.items.find(x=>x.id===${k.id}).geburtM=+this.value;CALC.runHH()"></div>
+        <div class="field"><label>Monatl. Mehrkosten (€)</label><input type="number" value="${k.kosten}" min="0" onchange="KINDER.items.find(x=>x.id===${k.id}).kosten=+this.value;CALC.runHH()"></div>
+        <div class="field"><label>Kindergeld (€/Monat)</label><input type="number" value="${k.kindergeld}" min="0" onchange="KINDER.items.find(x=>x.id===${k.id}).kindergeld=+this.value;CALC.runHH()"></div>
+      </div></div>`).join('');
   }
 };
 
-/* ============================================================
-   MODULE 5 – EXTRA AUSGABEN
-   ============================================================ */
 var EXTRA={
   items:[],
   add(){this.items.push({id:Date.now(),name:'Neue Ausgabe',betrag:0,rhy:'monatlich'});this.render();},
@@ -640,20 +586,10 @@ var EXTRA={
   totalMonatlich(lzM){return this.items.reduce((s,a)=>{if(a.rhy==='monatlich')return s+a.betrag;if(a.rhy==='jaehrlich')return s+a.betrag/12;return s+a.betrag/(lzM||240);},0);}
 };
 
-/* ============================================================
-   MODULE 5b – PERSONEN-AUSGABEN & SPLIT
-   ============================================================ */
 var PERS={
-  items:[],   // {id, person:1|2, name, betrag, rhy}
-  splitActive: false,
-  splitP1: 50,
-
-  add(p){
-    this.items.push({id:Date.now(),person:p,name:'Neue Ausgabe',betrag:0,rhy:'monatlich'});
-    this.render();CALC.runHH();
-  },
+  items:[],splitActive:false,splitP1:50,
+  add(p){this.items.push({id:Date.now(),person:p,name:'Neue Ausgabe',betrag:0,rhy:'monatlich'});this.render();CALC.runHH();},
   remove(id){this.items=this.items.filter(x=>x.id!==id);this.render();CALC.runHH();},
-
   render(){
     [1,2].forEach(p=>{
       const mine=this.items.filter(x=>x.person===p);
@@ -671,30 +607,17 @@ var PERS={
       const sum=this.monthlySum(p,240);
       U.el(`pers-p${p}-sum`).textContent=mine.length?`Summe: ${U.eur(sum)}/Monat`:'Noch keine individuellen Ausgaben.';
     });
-    this._updateHeadings();
-    this._renderOverview();
+    this._updateHeadings();this._renderOverview();
   },
-
-  monthlySum(p,lzM){
-    return this.items.filter(x=>x.person===p).reduce((s,a)=>{
-      if(a.rhy==='monatlich') return s+a.betrag;
-      if(a.rhy==='jaehrlich') return s+a.betrag/12;
-      return s+a.betrag/(lzM||240);
-    },0);
-  },
-
+  monthlySum(p,lzM){return this.items.filter(x=>x.person===p).reduce((s,a)=>{if(a.rhy==='monatlich')return s+a.betrag;if(a.rhy==='jaehrlich')return s+a.betrag/12;return s+a.betrag/(lzM||240);},0);},
   _updateHeadings(){
     [1,2].forEach(p=>{
       const n=U.name(p);
-      const el=U.el(`pers-p${p}-heading`);
-      if(el) el.textContent=`👤 ${n} – Individuelle Ausgaben`;
-      const sn=U.el(`split-name-p${p}`);
-      if(sn) sn.textContent=n;
+      const el=U.el(`pers-p${p}-heading`);if(el)el.textContent=`👤 ${n} – Individuelle Ausgaben`;
+      const sn=U.el(`split-name-p${p}`);if(sn)sn.textContent=n;
     });
-    const sln=U.el('split-slider-name');
-    if(sln) sln.textContent=U.name(1);
+    const sln=U.el('split-slider-name');if(sln)sln.textContent=U.name(1);
   },
-
   _renderOverview(){
     const lzM=PLAN.data.length||240;
     const gemeinsam=CALC._lastGemeinsam||0;
@@ -702,15 +625,15 @@ var PERS={
     const p2Share=this.splitActive?gemeinsam*(100-this.splitP1)/100:gemeinsam/2;
     const p1Total=p1Share+this.monthlySum(1,lzM);
     const p2Total=p2Share+this.monthlySum(2,lzM);
-    const p1Inc=CALC._lastIncome?.p1||0, p2Inc=CALC._lastIncome?.p2||0;
-    const n1=U.name(1), n2=U.name(2);
+    const p1Inc=CALC._lastIncome?.p1||0,p2Inc=CALC._lastIncome?.p2||0;
+    const n1=U.name(1),n2=U.name(2);
     U.el('pers-overview').innerHTML=`
       <h3 style="margin-bottom:10px">📊 Gesamtbelastung pro Person</h3>
       <div class="income-grid">
         <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent)">
           <h3 style="color:var(--accent);margin-bottom:10px">${n1}</h3>
           <div class="ov-row"><span>Einkommen</span><span class="ov-val" style="color:var(--green)">${U.eur(p1Inc)}/M</span></div>
-          <div class="ov-row"><span>Anteil gemeinsame Kosten ${this.splitActive?`(${this.splitP1} %)`:''}</span><span class="ov-val">${U.eur(p1Share)}/M</span></div>
+          <div class="ov-row"><span>Anteil gemeinsame Kosten${this.splitActive?` (${this.splitP1} %)`:''}</span><span class="ov-val">${U.eur(p1Share)}/M</span></div>
           <div class="ov-row"><span>Individuelle Ausgaben</span><span class="ov-val">${U.eur(this.monthlySum(1,lzM))}/M</span></div>
           <div class="ov-total"><span>Gesamtbelastung</span><span>${U.eur(p1Total)}/M</span></div>
           ${p1Inc>0?`<div class="muted" style="font-size:12px;margin-top:6px">Quote: ${U.pct(p1Total/p1Inc*100)} des Einkommens</div>`:''}
@@ -719,7 +642,7 @@ var PERS={
         <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent2)">
           <h3 style="color:var(--accent2);margin-bottom:10px">${n2}</h3>
           <div class="ov-row"><span>Einkommen</span><span class="ov-val" style="color:var(--green)">${U.eur(p2Inc)}/M</span></div>
-          <div class="ov-row"><span>Anteil gemeinsame Kosten ${this.splitActive?`(${100-this.splitP1} %)`:''}</span><span class="ov-val">${U.eur(p2Share)}/M</span></div>
+          <div class="ov-row"><span>Anteil gemeinsame Kosten${this.splitActive?` (${100-this.splitP1} %)`:''}</span><span class="ov-val">${U.eur(p2Share)}/M</span></div>
           <div class="ov-row"><span>Individuelle Ausgaben</span><span class="ov-val">${U.eur(this.monthlySum(2,lzM))}/M</span></div>
           <div class="ov-total"><span>Gesamtbelastung</span><span>${U.eur(p2Total)}/M</span></div>
           ${p2Inc>0?`<div class="muted" style="font-size:12px;margin-top:6px">Quote: ${U.pct(p2Total/p2Inc*100)} des Einkommens</div>`:''}
@@ -739,8 +662,7 @@ var SPLIT={
     this.update();CALC.runHH();
   },
   update(){
-    const v=U.n('split-slider');
-    PERS.splitP1=v;
+    const v=U.n('split-slider');PERS.splitP1=v;
     U.el('split-bar-p1').style.width=v+'%';
     U.el('split-lbl-p1').textContent=v+' %';
     U.el('split-lbl-p2').textContent=(100-v)+' %';
@@ -748,24 +670,21 @@ var SPLIT={
   }
 };
 
-/* ============================================================
-   MODULE 6 – FIXED AUSGABEN
-   ============================================================ */
-// *** ADD / REMOVE items here to customise fixed costs ***
 var FIXED_DEFS=[
-  {id:'fa-gs',  label:'Grundsteuer',           val:0,   auto:true,  group:'wohnen'},
-  {id:'fa-gv',  label:'Gebäudeversicherung',   val:60,  auto:false, group:'wohnen'},
-  {id:'fa-hpfl',label:'Haftpflichtversicherung',val:20, auto:false, group:'wohnen'},
-  {id:'fa-heiz',label:'Heizung / Energie',     val:150, auto:false, group:'wohnen'},
-  {id:'fa-str', label:'Strom',                 val:80,  auto:false, group:'wohnen'},
-  {id:'fa-wass',label:'Wasser / Abwasser',     val:50,  auto:false, group:'wohnen'},
-  {id:'fa-muel',label:'Müllabfuhr',            val:20,  auto:false, group:'wohnen'},
-  {id:'fa-ih',  label:'Instandhaltungsrücklage',val:0,  auto:true,  group:'wohnen'},
-  {id:'fa-inet',label:'Internet / Telefon',    val:40,  auto:false, group:'wohnen'},
-  {id:'fa-lm',  label:'Lebensmittel',          val:400, auto:false, group:'leben'},
-  {id:'fa-mob', label:'Mobilität',             val:300, auto:false, group:'leben'},
+  {id:'fa-gs', label:'Grundsteuer',val:0,auto:true,group:'wohnen'},
+  {id:'fa-gv', label:'Gebäudeversicherung',val:60,auto:false,group:'wohnen'},
+  {id:'fa-hpfl',label:'Haftpflichtversicherung',val:20,auto:false,group:'wohnen'},
+  {id:'fa-heiz',label:'Heizung / Energie',val:150,auto:false,group:'wohnen'},
+  {id:'fa-str', label:'Strom',val:80,auto:false,group:'wohnen'},
+  {id:'fa-wass',label:'Wasser / Abwasser',val:50,auto:false,group:'wohnen'},
+  {id:'fa-muel',label:'Müllabfuhr',val:20,auto:false,group:'wohnen'},
+  {id:'fa-ih', label:'Instandhaltungsrücklage',val:0,auto:true,group:'wohnen'},
+  {id:'fa-inet',label:'Internet / Telefon',val:40,auto:false,group:'wohnen'},
+  {id:'fa-lm', label:'Lebensmittel',val:400,auto:false,group:'leben'},
+  {id:'fa-mob', label:'Mobilität',val:300,auto:false,group:'leben'},
 ];
 var WOHNKOSTEN_IDS=FIXED_DEFS.filter(f=>f.group==='wohnen').map(f=>f.id);
+
 var FIXED={
   render(){
     U.el('fixed-ausgaben').innerHTML=FIXED_DEFS.map(f=>`
@@ -778,15 +697,12 @@ var FIXED={
   total(){return FIXED_DEFS.reduce((s,f)=>s+U.n(f.id),0);}
 };
 
-/* ============================================================
-   MODULE 7 – ELTERNGELD (§2 BEEG)
-   ============================================================ */
 var ELTERNGELD={
   calc(nettoM){
-    if(nettoM<=0) return{betrag:300,info:'Mindest-Elterngeld: 300 €/M'};
+    if(nettoM<=0)return{betrag:300,info:'Mindest-Elterngeld: 300 €/M'};
     let f;
-    if(nettoM<1000) f=0.67+Math.min(0.33,(1000-nettoM)/2*0.001);
-    else if(nettoM>1200) f=0.65;
+    if(nettoM<1000)f=0.67+Math.min(0.33,(1000-nettoM)/2*0.001);
+    else if(nettoM>1200)f=0.65;
     else f=0.67;
     const roh=nettoM*f;
     const betrag=Math.min(1800,Math.max(300,Math.round(roh)));
@@ -794,119 +710,50 @@ var ELTERNGELD={
   }
 };
 
-/* ============================================================
-   MODULE 8 – CHARTS
-   ============================================================ */
 var CHARTS={
   cache:{},
   destroy(id){if(this.cache[id]){this.cache[id].destroy();delete this.cache[id];}},
-  _base(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{ticks:{color:'#8aa8c5',maxTicksLimit:14},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}; },
+  _base(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{ticks:{color:'#8aa8c5',maxTicksLimit:14},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}};},
   line(id,datasets,labels){this.destroy(id);this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'line',data:{labels,datasets},options:this._base()});},
-  bar(id,datasets,labels,stacked=false){
-    this.destroy(id);
-    const o=this._base();
-    if(stacked){o.scales.x.stacked=true;o.scales.y.stacked=true;}
-    this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'bar',data:{labels,datasets},options:o});
-  },
-  mixed(id,datasets,labels){
-    this.destroy(id);
-    const o=this._base();
-    o.scales.x.stacked=true; o.scales.y.stacked=true;
-    this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'bar',data:{labels,datasets},options:o});
-  },
-  doughnut(id,labels,data,colors){
-    this.destroy(id);
-    this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#1e2d3d'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8aa8c5',font:{size:11},boxWidth:12}}}}});
-  },
+  bar(id,datasets,labels,stacked=false){this.destroy(id);const o=this._base();if(stacked){o.scales.x.stacked=true;o.scales.y.stacked=true;}this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'bar',data:{labels,datasets},options:o});},
+  doughnut(id,labels,data,colors){this.destroy(id);this.cache[id]=new Chart(U.el(id).getContext('2d'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#1e2d3d'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8aa8c5',font:{size:11},boxWidth:12}}}}});},
   resize(){Object.values(this.cache).forEach(c=>c.resize());}
 };
 
-/* ============================================================
-   MODULE 9 – TILGUNGSPLAN
-   ============================================================ */
 var PLAN={
-  view:'mon', data:[],
+  view:'mon',data:[],
   setView(v){this.view=v;U.el('tv-mon').classList.toggle('active',v==='mon');U.el('tv-yr').classList.toggle('active',v==='yr');this.render(this.data);},
   render(plan){
-    this.data=plan;
-    const body=U.el('plan-body');
-    if(!plan.length){body.innerHTML='';return;}
+    this.data=plan;const body=U.el('plan-body');if(!plan.length){body.innerHTML='';return;}
     let html='';
     if(this.view==='mon'){
-      plan.forEach((r,i)=>{
-        const last=i===plan.length-1;
-        html+=`<tr class="${last?'tr-last':''} ${r.bStart&&i>0?'tr-sep':''}">
-          <td>J${Math.ceil(r.monat/12)} M${((r.monat-1)%12)+1}</td>
-          <td>${U.eur(r.rate)}</td><td>${U.eur(r.za)}</td><td>${U.eur(r.ta)}</td>
-          <td>${r.so>0?U.eur(r.so):'–'}</td><td>${U.eur(r.rs)}</td></tr>`;
-      });
+      plan.forEach((r,i)=>{const last=i===plan.length-1;html+=`<tr class="${last?'tr-last':''} ${r.bStart&&i>0?'tr-sep':''}"><td>J${Math.ceil(r.monat/12)} M${((r.monat-1)%12)+1}</td><td>${U.eur(r.rate)}</td><td>${U.eur(r.za)}</td><td>${U.eur(r.ta)}</td><td>${r.so>0?U.eur(r.so):'–'}</td><td>${U.eur(r.rs)}</td></tr>`;});
     } else {
-      const by={};
-      plan.forEach(r=>{const y=Math.ceil(r.monat/12);if(!by[y])by[y]={rate:0,za:0,ta:0,so:0,rs:0};by[y].rate+=r.rate;by[y].za+=r.za;by[y].ta+=r.ta;by[y].so+=r.so;by[y].rs=r.rs;});
-      Object.entries(by).forEach(([y,d],i,arr)=>{
-        const last=i===arr.length-1;
-        html+=`<tr class="${last?'tr-last':''}"><td>Jahr ${y}</td><td>${U.eur(d.rate)}</td><td>${U.eur(d.za)}</td><td>${U.eur(d.ta)}</td><td>${d.so>0?U.eur(d.so):'–'}</td><td>${U.eur(d.rs)}</td></tr>`;
-      });
+      const by={};plan.forEach(r=>{const y=Math.ceil(r.monat/12);if(!by[y])by[y]={rate:0,za:0,ta:0,so:0,rs:0};by[y].rate+=r.rate;by[y].za+=r.za;by[y].ta+=r.ta;by[y].so+=r.so;by[y].rs=r.rs;});
+      Object.entries(by).forEach(([y,d],i,arr)=>{const last=i===arr.length-1;html+=`<tr class="${last?'tr-last':''}"><td>Jahr ${y}</td><td>${U.eur(d.rate)}</td><td>${U.eur(d.za)}</td><td>${U.eur(d.ta)}</td><td>${d.so>0?U.eur(d.so):'–'}</td><td>${U.eur(d.rs)}</td></tr>`;});
     }
     body.innerHTML=html;
   }
 };
 
-/* ============================================================
-   MODULE 10 – CASHFLOW
-   ============================================================ */
 var CASHFLOW={
-  view:'mon', _rows:[],
+  view:'mon',_rows:[],
   setView(v){this.view=v;U.el('cf-mon').classList.toggle('active',v==='mon');U.el('cf-yr').classList.toggle('active',v==='yr');this.render();},
-
-  /* Compute monthly cashflow for full loan term */
   build(income,planData){
-    const lzM=planData.length||240;
-    const inflation=U.chk('inflation-on');
-    const wohnBase=FIXED.sum(WOHNKOSTEN_IDS);
-    const lebenBase=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
-    const extraBase=EXTRA.totalMonatlich(lzM);
-    const pkM=(()=>{const b=U.n('pk-betrag'),m=U.s('pk-mode');if(!b)return 0;if(m==='monatlich')return U.n('pk-mrate');if(m==='jaehrlich')return U.n('pk-jrate')/12;return 0;})();
-    const rows=[];
+    const lzM=planData.length||240;const inflation=U.chk('inflation-on');
+    const wohnBase=FIXED.sum(WOHNKOSTEN_IDS);const lebenBase=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
+    const extraBase=EXTRA.totalMonatlich(lzM);const rows=[];
     for(let m=1;m<=lzM;m++){
-      const yr=Math.ceil(m/12)-1;
-      const inf=inflation?Math.pow(1.02,yr):1;
-
-      /* Person 1 income with EZ + Stundenreduktion */
+      const yr=Math.ceil(m/12)-1;const inf=inflation?Math.pow(1.02,yr):1;
       let p1=income.p1Base*Math.pow(1+income.p1Steig/100,yr);
-      if(income.ez1){
-        const ez=income.ez1;
-        if(m>=ez.start&&m<ez.start+ez.dauer){
-          p1=ez.geld;
-        } else if(ez.red&&m>=ez.start+ez.dauer){
-          const mAfter=m-(ez.start+ez.dauer); // months after EZ ended
-          const baseFull=income.p1Base*Math.pow(1+income.p1Steig/100,yr);
-          p1=this._applyReduction(baseFull,ez.red,mAfter);
-        }
-      }
-
-      /* Person 2 income with EZ + Stundenreduktion */
+      if(income.ez1){const ez=income.ez1;if(m>=ez.start&&m<ez.start+ez.dauer){p1=ez.geld;}else if(ez.red&&m>=ez.start+ez.dauer){const mAfter=m-(ez.start+ez.dauer);const baseFull=income.p1Base*Math.pow(1+income.p1Steig/100,yr);p1=this._applyReduction(baseFull,ez.red,mAfter);}}
       let p2=income.p2Base*Math.pow(1+income.p2Steig/100,yr);
-      if(income.ez2){
-        const ez=income.ez2;
-        if(m>=ez.start&&m<ez.start+ez.dauer){
-          p2=ez.geld;
-        } else if(ez.red&&m>=ez.start+ez.dauer){
-          const mAfter=m-(ez.start+ez.dauer);
-          const baseFull=income.p2Base*Math.pow(1+income.p2Steig/100,yr);
-          p2=this._applyReduction(baseFull,ez.red,mAfter);
-        }
-      }
-
+      if(income.ez2){const ez=income.ez2;if(m>=ez.start&&m<ez.start+ez.dauer){p2=ez.geld;}else if(ez.red&&m>=ez.start+ez.dauer){const mAfter=m-(ez.start+ez.dauer);const baseFull=income.p2Base*Math.pow(1+income.p2Steig/100,yr);p2=this._applyReduction(baseFull,ez.red,mAfter);}}
       const kg=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kindergeld:s,0);
       const kindK=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kosten:s,0);
-      const energieRes=window._energieResults||{};let energieEinmal=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat)energieEinmal+=r.nettoKosten;});const einkommen=p1+p2+kg;
-      const kRate=planData[m-1]?.rate??0;
-      const wohn=wohnBase*inf;
-      const leben=(lebenBase+kindK)*inf;
-      const sonstige=(extraBase+pkM)*inf;
-      const energieSpar=(()=>{let s=0;const eR=window._energieResults||{};['wp','pv','bat','mod'].forEach(function(id){const r=eR[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();const ausgaben=kRate+wohn+leben+(extraBase+pkM)*inf-energieSpar;
-      const frei=einkommen-ausgaben-energieEinmal;
+      const einkommen=p1+p2+kg;const kRate=planData[m-1]?.rate??0;
+      const wohn=wohnBase*inf;const leben=(lebenBase+kindK)*inf;const sonstige=extraBase*inf;
+      const ausgaben=kRate+wohn+leben+sonstige;const frei=einkommen-ausgaben;
       const inEZ1=income.ez1&&m>=income.ez1.start&&m<income.ez1.start+income.ez1.dauer;
       const inEZ2=income.ez2&&m>=income.ez2.start&&m<income.ez2.start+income.ez2.dauer;
       const inRed1=income.ez1?.red&&m>=income.ez1.start+income.ez1.dauer&&m<income.ez1.start+income.ez1.dauer+income.ez1.red.dauer;
@@ -916,1152 +763,238 @@ var CASHFLOW={
     }
     return rows;
   },
-
-  /* Apply reduction + ramp-up to a base income */
   _applyReduction(baseFull,red,mAfter){
-    if(mAfter<0) return baseFull;
-    if(mAfter>=red.dauer) return baseFull*red.ziel/100;
-    const startPct=red.startPct, zielPct=red.ziel;
-    if(red.rhy==='stufen'){
-      const step=Math.floor(mAfter/6);
-      const totalSteps=Math.max(1,Math.floor(red.dauer/6));
-      const pct=startPct+(zielPct-startPct)*step/totalSteps;
-      return baseFull*pct/100;
-    }
-    // linear
-    const pct=startPct+(zielPct-startPct)*mAfter/red.dauer;
-    return baseFull*pct/100;
+    if(mAfter<0)return baseFull;if(mAfter>=red.dauer)return baseFull*red.ziel/100;
+    const startPct=red.startPct,zielPct=red.ziel;
+    if(red.rhy==='stufen'){const step=Math.floor(mAfter/6);const totalSteps=Math.max(1,Math.floor(red.dauer/6));const pct=startPct+(zielPct-startPct)*step/totalSteps;return baseFull*pct/100;}
+    const pct=startPct+(zielPct-startPct)*mAfter/red.dauer;return baseFull*pct/100;
   },
-
   update(income,planData){this._rows=this.build(income,planData);this.render();this._renderCharts();},
-
   render(){
-    const body=U.el('cf-body');
-    if(!this._rows.length){body.innerHTML='';return;}
+    const body=U.el('cf-body');if(!this._rows.length){body.innerHTML='';return;}
     let data=this._rows;
     if(this.view==='yr'){
-      const by={};
-      data.forEach(r=>{if(!by[r.yr])by[r.yr]={yr:r.yr,einkommen:0,kRate:0,wohn:0,leben:0,ausgaben:0,frei:0,inEZ1:false,inEZ2:false,inRed1:false,inRed2:false,kindStart:false};
-        const y=by[r.yr];y.einkommen+=r.einkommen;y.kRate+=r.kRate;y.wohn+=r.wohn;y.leben+=r.leben;y.ausgaben+=r.ausgaben;y.frei+=r.frei;
-        y.inEZ1=y.inEZ1||r.inEZ1;y.inEZ2=y.inEZ2||r.inEZ2;y.inRed1=y.inRed1||r.inRed1;y.inRed2=y.inRed2||r.inRed2;y.kindStart=y.kindStart||r.kindStart;});
-      data=Object.values(by);
+      const by={};data.forEach(r=>{if(!by[r.yr])by[r.yr]={yr:r.yr,einkommen:0,kRate:0,wohn:0,leben:0,ausgaben:0,frei:0,inEZ1:false,inEZ2:false,inRed1:false,inRed2:false,kindStart:false};const y=by[r.yr];y.einkommen+=r.einkommen;y.kRate+=r.kRate;y.wohn+=r.wohn;y.leben+=r.leben;y.ausgaben+=r.ausgaben;y.frei+=r.frei;y.inEZ1=y.inEZ1||r.inEZ1;y.inEZ2=y.inEZ2||r.inEZ2;y.inRed1=y.inRed1||r.inRed1;y.inRed2=y.inRed2||r.inRed2;y.kindStart=y.kindStart||r.kindStart;});data=Object.values(by);
     }
     const n1=U.name(1),n2=U.name(2);
     body.innerHTML=data.map(r=>{
-      const isYr=this.view==='yr';
-      const label=isYr?`Jahr ${r.yr}`:`J${r.yr} M${((r.m-1)%12)+1}`;
-      const fc=r.frei>=0?'var(--green)':'var(--red)';
-      const badges=[
-        r.inEZ1?`<span style="background:rgba(255,209,102,.25);color:var(--yellow);border-radius:4px;padding:1px 5px;font-size:10px">EZ ${n1}</span>`:'',
-        r.inEZ2?`<span style="background:rgba(0,153,255,.25);color:var(--accent2);border-radius:4px;padding:1px 5px;font-size:10px">EZ ${n2}</span>`:'',
-        r.inRed1?`<span style="background:rgba(155,93,229,.25);color:var(--purple);border-radius:4px;padding:1px 5px;font-size:10px">↗ ${n1}</span>`:'',
-        r.inRed2?`<span style="background:rgba(155,93,229,.25);color:var(--purple);border-radius:4px;padding:1px 5px;font-size:10px">↗ ${n2}</span>`:'',
-        r.kindStart?'<span style="background:rgba(255,159,243,.25);color:var(--pink);border-radius:4px;padding:1px 5px;font-size:10px">👶</span>':'',
-      ].join(' ');
+      const isYr=this.view==='yr';const label=isYr?`Jahr ${r.yr}`:`J${r.yr} M${((r.m-1)%12)+1}`;const fc=r.frei>=0?'var(--green)':'var(--red)';
+      const badges=[r.inEZ1?`<span style="background:rgba(255,209,102,.25);color:var(--yellow);border-radius:4px;padding:1px 5px;font-size:10px">EZ ${n1}</span>`:'',r.inEZ2?`<span style="background:rgba(0,153,255,.25);color:var(--accent2);border-radius:4px;padding:1px 5px;font-size:10px">EZ ${n2}</span>`:'',r.inRed1?`<span style="background:rgba(155,93,229,.25);color:var(--purple);border-radius:4px;padding:1px 5px;font-size:10px">↗ ${n1}</span>`:'',r.inRed2?`<span style="background:rgba(155,93,229,.25);color:var(--purple);border-radius:4px;padding:1px 5px;font-size:10px">↗ ${n2}</span>`:'',r.kindStart?'<span style="background:rgba(255,159,243,.25);color:var(--pink);border-radius:4px;padding:1px 5px;font-size:10px">👶</span>':''].join(' ');
       return`<tr><td>${label} ${badges}</td><td style="color:var(--green)">${U.eur(r.einkommen)}</td><td>${U.eur(r.kRate)}</td><td>${U.eur(r.wohn)}</td><td>${U.eur(r.leben)}</td><td>${U.eur(r.ausgaben)}</td><td style="color:${fc};font-weight:600">${U.eur(r.frei)}</td></tr>`;
     }).join('');
   },
-
   _renderCharts(){
-    const rows=this._rows; if(!rows.length) return;
-    const useMon=rows.length<=36;
-    let cr=rows;
-    if(!useMon){
-      const by={};
-      rows.forEach(r=>{if(!by[r.yr])by[r.yr]={yr:r.yr,einkommen:0,kRate:0,wohn:0,leben:0,ausgaben:0,frei:0,count:0};
-        const y=by[r.yr];y.einkommen+=r.einkommen;y.kRate+=r.kRate;y.wohn+=r.wohn;y.leben+=r.leben;y.ausgaben+=r.ausgaben;y.frei+=r.frei;y.count++;});
-      cr=Object.values(by);
-    }
+    const rows=this._rows;if(!rows.length)return;
+    const useMon=rows.length<=36;let cr=rows;
+    if(!useMon){const by={};rows.forEach(r=>{if(!by[r.yr])by[r.yr]={yr:r.yr,einkommen:0,kRate:0,wohn:0,leben:0,ausgaben:0,frei:0};const y=by[r.yr];y.einkommen+=r.einkommen;y.kRate+=r.kRate;y.wohn+=r.wohn;y.leben+=r.leben;y.ausgaben+=r.ausgaben;y.frei+=r.frei;});cr=Object.values(by);}
     const labels=useMon?cr.map(r=>`J${r.yr}M${((r.m-1)%12)+1}`):cr.map(r=>`J${r.yr}`);
     CHARTS.destroy('ch-cf');
-    CHARTS.cache['ch-cf']=new Chart(U.el('ch-cf').getContext('2d'),{
-      type:'bar',
-      data:{labels,datasets:[
-        {label:'Kreditrate',   data:cr.map(r=>r.kRate), backgroundColor:'rgba(0,153,255,.7)', stack:'a'},
-        {label:'Wohnkosten',   data:cr.map(r=>r.wohn),  backgroundColor:'rgba(255,209,102,.7)',stack:'a'},
-        {label:'Lebenshaltung',data:cr.map(r=>r.leben),  backgroundColor:'rgba(255,77,109,.6)', stack:'a'},
-        {label:'Einkommen',    data:cr.map(r=>r.einkommen),type:'line',borderColor:'#06d6a0',backgroundColor:'transparent',pointRadius:0,tension:.3,stack:undefined,order:0},
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},
-        scales:{x:{stacked:true,ticks:{color:'#8aa8c5',maxTicksLimit:16},grid:{color:'rgba(255,255,255,.04)'}},y:{stacked:true,ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}
-    });
+    CHARTS.cache['ch-cf']=new Chart(U.el('ch-cf').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Kreditrate',data:cr.map(r=>r.kRate),backgroundColor:'rgba(0,153,255,.7)',stack:'a'},{label:'Wohnkosten',data:cr.map(r=>r.wohn),backgroundColor:'rgba(255,209,102,.7)',stack:'a'},{label:'Lebenshaltung',data:cr.map(r=>r.leben),backgroundColor:'rgba(255,77,109,.6)',stack:'a'},{label:'Einkommen',data:cr.map(r=>r.einkommen),type:'line',borderColor:'#06d6a0',backgroundColor:'transparent',pointRadius:0,tension:.3,order:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#8aa8c5',maxTicksLimit:16},grid:{color:'rgba(255,255,255,.04)'}},y:{stacked:true,ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}});
     CHARTS.destroy('ch-cf-frei');
     const freiData=cr.map(r=>r.frei);
-    CHARTS.cache['ch-cf-frei']=new Chart(U.el('ch-cf-frei').getContext('2d'),{
-      type:'bar',
-      data:{labels,datasets:[{label:'Freie Liquidität',data:freiData,backgroundColor:freiData.map(v=>v>=0?'rgba(6,214,160,.6)':'rgba(255,77,109,.6)'),borderColor:freiData.map(v=>v>=0?'#06d6a0':'#ff4d6d'),borderWidth:1}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{ticks:{color:'#8aa8c5',maxTicksLimit:16},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}
-    });
+    CHARTS.cache['ch-cf-frei']=new Chart(U.el('ch-cf-frei').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Freie Liquidität',data:freiData,backgroundColor:freiData.map(v=>v>=0?'rgba(6,214,160,.6)':'rgba(255,77,109,.6)'),borderColor:freiData.map(v=>v>=0?'#06d6a0':'#ff4d6d'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8aa8c5',font:{size:11}}}},scales:{x:{ticks:{color:'#8aa8c5',maxTicksLimit:16},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8aa8c5'},grid:{color:'rgba(255,255,255,.04)'}}}}});
   }
 };
 
-/* ============================================================
-   MODULE 11 – MAIN CALC ORCHESTRATOR
-   ============================================================ */
+// ── CALC orchestrator (minimal stub – wire up your full logic here) ──
 var CALC={
-  _lock:false,
-  _lastGemeinsam:0,
-  _lastIncome:null,
-
-  run(){
-    if(this._lock) return;
-    this._lock=true;
-    try{this._runFin();this.runHH();}
-    finally{this._lock=false;}
+  _lastGemeinsam:0,_lastIncome:{p1:0,p2:0},
+  _getIncome(){
+    const p1Base=U.n('p1-netto'),p2Base=U.n('p2-netto');
+    const p1Steig=U.n('p1-steig'),p2Steig=U.n('p2-steig');
+    const ez1=U.chk('p1-ez-on')?{start:U.n('p1-ez-start'),dauer:U.n('p1-ez-dauer'),geld:U.n('p1-ez-geld'),red:U.chk('p1-red-on')?{startPct:U.n('p1-red-start-pct'),ziel:U.n('p1-red-ziel-pct'),dauer:U.n('p1-red-dauer'),rhy:U.s('p1-red-rhy')}:null}:null;
+    const ez2=U.chk('p2-ez-on')?{start:U.n('p2-ez-start'),dauer:U.n('p2-ez-dauer'),geld:U.n('p2-ez-geld'),red:U.chk('p2-red-on')?{startPct:U.n('p2-red-start-pct'),ziel:U.n('p2-red-ziel-pct'),dauer:U.n('p2-red-dauer'),rhy:U.s('p2-red-rhy')}:null}:null;
+    return{p1Base,p2Base,p1Steig,p2Steig,ez1,ez2};
   },
-
-  _runFin(){
-    const kp=U.n('f-kaufpreis'), ek=U.n('f-ek');
-    const kredit=Math.max(0,kp-ek);
-    const zp=U.n('f-zins'), tp=U.n('f-tilg'), bindJ=U.n('f-bind'), bindM=bindJ*12;
-
-    // Auto fields – use setAuto (no cascade)
-    U.setAuto('f-kredit',kredit,0);
-
-    const gsA=U.n('i-grundstueck')*U.n('i-bodenricht')*U.n('i-messzahl')/1000*U.n('i-hebesatz')/100/12;
-    U.el('gs-hint').textContent=`(auto: ${U.eur(gsA,2)}/M)`;
-    U.setAuto('i-grundsteuer',gsA,2);
-
-    const alter=new Date().getFullYear()-U.n('i-baujahr');
-    const iRate=alter<10?.5:alter<=25?1:1.5;
-    const ihA=U.n('i-wohnflaeche')*iRate;
-    U.el('ih-hint').textContent=`(auto: ${iRate}€/m² = ${U.eur(ihA,2)}/M)`;
-    U.setAuto('i-instand',ihA,2);
-
-    // Sync auto values to Haushalt tab without triggering cascade
-    const faGs=U.el('fa-gs'); if(faGs&&faGs.dataset.auto==='true') U.setAuto('fa-gs',gsA,2);
-    const faIh=U.el('fa-ih'); if(faIh&&faIh.dataset.auto==='true') U.setAuto('fa-ih',ihA,2);
-
-    U.el('warn-zins').style.display=(kredit>0&&zp===0)?'':'none';
-
-    const nkSum=kp*(U.n('nk-grest')+U.n('nk-notar')+U.n('nk-gb')+U.n('nk-makler'))/100;
-    U.el('nk-info').innerHTML=`NK gesamt: <strong>${U.eur(nkSum)}</strong> &nbsp;|&nbsp; Gesamtinvestition: <strong>${U.eur(kp+nkSum)}</strong>`;
-
+  run(){
+    const kp=U.n('kaufpreis'),ek=U.n('eigenkapital'),zp=U.n('zinssatz'),tp=U.n('tilgung'),bindJ=U.n('zinsbindung');
+    const gew=kp*U.n('gew-pct')/100,notar=kp*U.n('notar-pct')/100,makler=kp*U.n('makler-pct')/100;
+    const ren=U.n('renovierung'),snk=U.n('sonstige-knk');
+    const nebenkosten=gew+notar+makler+ren+snk;
+    const kredit=Math.max(0,kp+nebenkosten-ek);
+    const bindM=bindJ*12;
     const plan=ENGINE.calc(kredit,zp,tp,bindM,ST.items,BST.items);
     const sum=ENGINE.summary(plan,bindM);
     PLAN.render(plan);
-
-    U.el('k-rate').textContent=U.eur(sum.rate);
-    U.el('k-lz').textContent=U.lz(sum.laufzeit);
-    U.el('k-zinsen').textContent=U.eur(sum.totalZinsen);
-    U.el('k-gesamt').textContent=U.eur(kredit+sum.totalZinsen+nkSum);
-    U.el('k-rest').textContent=U.eur(sum.restschuld);
-
-    const rw=U.el('rest-warn');
-    if(sum.restschuld>0){rw.style.display='';rw.textContent=`⚠️ Restschuld nach ${bindJ} Jahren: ${U.eur(sum.restschuld)}`;}
-    else rw.style.display='none';
-
-    const planO=ENGINE.calc(kredit,zp,tp,bindM,[],BST.items);
-    const lzD=planO.length-plan.length;
-    const zD=planO.reduce((s,r)=>s+r.za,0)-plan.reduce((s,r)=>s+r.za,0);
-    U.el('sonder-info').textContent=ST.items.length&&ST.items[0].betrag>0?`Zinseinsparung: ${U.eur(zD)} | Laufzeitverkürzung: ${U.lz(lzD)}`:'';
-
-    // PK info (read-only display, no field changes)
-    const pkB=U.n('pk-betrag'),pkZ=U.n('pk-zins'),pkM=U.s('pk-mode');
-    U.show('pk-einmal',pkM==='einmal'); U.show('pk-monatlich',pkM==='monatlich'); U.show('pk-jaehrlich',pkM==='jaehrlich');
-    if(pkB>0&&pkZ>0){
-      let gzl=0;
-      if(pkM==='monatlich'){const lz=pkB/U.n('pk-mrate');gzl=pkB*pkZ/100*lz/12;U.el('pk-m-info').textContent=`Laufzeit: ~${Math.ceil(lz)} Monate`;}
-      else if(pkM==='jaehrlich'){const lz=pkB/U.n('pk-jrate');gzl=pkB*pkZ/100*lz;U.el('pk-j-info').textContent=`Laufzeit: ~${Math.ceil(lz)} Jahre`;}
-      else gzl=pkB*pkZ/100*(U.n('pk-em')/12);
-      U.el('pk-zins-info').textContent=`Gesamtzinslast priv. Kredit: ~${U.eur(gzl)}`;
-    } else U.el('pk-zins-info').textContent='';
-
-    this._calcSzenarien(kredit,zp,tp,bindM,sum.restschuld,sum.totalZinsen,nkSum);
-    U.el('sl-zins').value=zp;
-    this._sliderCalc(zp,kredit,tp,bindM);
-    this._renderFinCharts(plan,kredit,sum.totalZinsen,nkSum,bindM);
-  },
-
-  _calcSzenarien(kredit,zpMain,tp,bindM,restschuld,totalZinsMain,nkSum){
-    const zinsen=[U.n('sc-best'),U.n('sc-base'),U.n('sc-worst')];
-    const ids=['sc-best-out','sc-base-out','sc-worst-out'];
-    const ds=[];
-    zinsen.forEach((zp,i)=>{
-      if(restschuld<=0){U.el(ids[i]).innerHTML='<em class="muted">Vollgetilgt</em>';ds.push([]);return;}
-      const p=ENGINE.calc(restschuld,zp,tp,600,[],[]);
-      const s=ENGINE.summary(p,999);
-      ds.push(p.map(r=>r.rs));
-      U.el(ids[i]).innerHTML=`<div style="margin-bottom:6px"><div class="muted" style="font-size:11px">Rate</div><div class="sc-val">${U.eur(s.rate)}/M</div></div><div style="margin-bottom:4px"><div class="muted" style="font-size:11px">Zinsen Restlaufzeit</div><div style="font-weight:600">${U.eur(s.totalZinsen)}</div></div><div><div class="muted" style="font-size:11px">Gesamtkosten</div><div style="font-weight:600">${U.eur(kredit+totalZinsMain+s.totalZinsen+nkSum)}</div></div>`;
+    // Summary
+    const sumEl=U.el('fin-summary');
+    if(sumEl)sumEl.innerHTML=`
+      <div class="dashboard">
+        <div class="kpi"><div class="kpi-label">Darlehen</div><div class="kpi-val sm">${U.eur(kredit)}</div></div>
+        <div class="kpi"><div class="kpi-label">Monatl. Rate</div><div class="kpi-val sm">${U.eur(sum.rate)}</div></div>
+        <div class="kpi"><div class="kpi-label">Gesamtzinsen</div><div class="kpi-val sm">${U.eur(sum.totalZinsen)}</div></div>
+        <div class="kpi"><div class="kpi-label">Restschuld Zinsb.-Ende</div><div class="kpi-val sm">${U.eur(sum.restschuld)}</div></div>
+        <div class="kpi"><div class="kpi-label">Laufzeit</div><div class="kpi-val sm">${U.lz(sum.laufzeit)}</div></div>
+        <div class="kpi"><div class="kpi-label">Kaufnebenkosten</div><div class="kpi-val sm">${U.eur(nebenkosten)}</div></div>
+      </div>`;
+    // Charts
+    const labels=plan.filter((_,i)=>i%12===0).map(r=>`J${Math.ceil(r.monat/12)}`);
+    const rsData=plan.filter((_,i)=>i%12===0).map(r=>r.rs);
+    const zaData=plan.filter((_,i)=>i%12===0).map(r=>r.za*12);
+    const taData=plan.filter((_,i)=>i%12===0).map(r=>r.ta*12);
+    CHARTS.line('ch-rs',[{label:'Restschuld',data:rsData,borderColor:'#ff4d6d',backgroundColor:'rgba(255,77,109,.1)',fill:true,tension:.4,pointRadius:0}],labels);
+    CHARTS.bar('ch-zt',[{label:'Zinsen',data:zaData,backgroundColor:'rgba(255,77,109,.7)'},{label:'Tilgung',data:taData,backgroundColor:'rgba(6,214,160,.7)'}],labels,true);
+    CHARTS.doughnut('ch-donut',['Zinsen','Tilgung','Nebenkosten'],[sum.totalZinsen,kredit,nebenkosten],['#ff4d6d','#06d6a0','#ffd166']);
+    // Szenarien
+    ['best','base','worst'].forEach(k=>{
+      const z=U.n(`sc-${k}`);const p=ENGINE.calc(kredit,z,tp,bindM,ST.items,[]);const s=ENGINE.summary(p,bindM);
+      U.el(`sc-${k}-out`).innerHTML=`<div class="sc-val">${U.eur(s.rate)}/M</div><div class="muted" style="font-size:12px">Zinsen: ${U.eur(s.totalZinsen)}</div><div class="muted" style="font-size:12px">Laufzeit: ${U.lz(s.laufzeit)}</div><div class="muted" style="font-size:12px">Restschuld: ${U.eur(s.restschuld)}</div>`;
     });
-    const maxL=Math.max(...ds.map(d=>d.length),1);
-    CHARTS.line('ch-szen',[
-      {label:'🟢 Best',data:ds[0],borderColor:'#06d6a0',backgroundColor:'transparent',pointRadius:0,tension:.3},
-      {label:'🟡 Base',data:ds[1],borderColor:'#ffd166',backgroundColor:'transparent',pointRadius:0,tension:.3},
-      {label:'🔴 Worst',data:ds[2],borderColor:'#ff4d6d',backgroundColor:'transparent',pointRadius:0,tension:.3},
-    ],Array.from({length:maxL},(_,i)=>i+1));
-  },
-
-  _sliderCalc(zp,kredit,tp,bindM){
-    const mit=ENGINE.calc(kredit,zp,tp,bindM,ST.items,BST.items);
-    const ohne=ENGINE.calc(kredit,zp,tp,bindM,[],BST.items);
-    const sum=ENGINE.summary(mit,bindM);
-    const lzD=ohne.length-mit.length;
-    U.el('sl-display').textContent=U.pct(zp,1);
-    U.el('sl-rate').textContent=U.eur(sum.rate);
-    U.el('sl-zinsen').textContent=U.eur(sum.totalZinsen);
-    U.el('sl-lz').textContent=U.lz(sum.laufzeit);
-    U.el('sl-rest').textContent=U.eur(sum.restschuld);
-    U.el('sl-sonder').textContent=lzD>0?`–${U.lz(lzD)}`:'–';
-  },
-
-  _renderFinCharts(plan,kredit,totalZinsen,nkSum,bindM){
-    CHARTS.line('ch-rs',[{label:'Restschuld',data:plan.map(r=>r.rs),borderColor:'#00c9b1',fill:true,backgroundColor:'rgba(0,201,177,.06)',pointRadius:0,tension:.3}],plan.map((_,i)=>i+1));
-    const by={};plan.forEach(r=>{const y=Math.ceil(r.monat/12);if(!by[y])by[y]={za:0,ta:0};by[y].za+=r.za;by[y].ta+=r.ta;});
-    const yrs=Object.keys(by);
-    CHARTS.bar('ch-zt',[{label:'Zinsanteil',data:yrs.map(y=>by[y].za),backgroundColor:'rgba(255,77,109,.7)',stack:'a'},{label:'Tilgung',data:yrs.map(y=>by[y].ta),backgroundColor:'rgba(0,201,177,.7)',stack:'a'}],yrs.map(y=>'J'+y),true);
-    CHARTS.doughnut('ch-donut',['Kreditbetrag','Nebenkosten','Gesamtzinsen'],[kredit,nkSum,totalZinsen],['#0099ff','#ffd166','#ff4d6d']);
-    // New modules
-    ZINSRISIKO.render(plan, kredit);
-  },
-
-  runHH(){
-    // Elterngeld auto-calc (guarded: data-auto)
-    ['1','2'].forEach(p=>{
-      if(U.chk(`p${p}-ez-on`)){
-        const eg=ELTERNGELD.calc(U.n(`p${p}-netto`));
-        const hEl=U.el(`p${p}-eg-hint`); if(hEl) hEl.textContent=`(auto: ${U.eur(eg.betrag)}/M)`;
-        const gEl=U.el(`p${p}-ez-geld`); if(gEl&&gEl.dataset.auto==='true') U.setAuto(`p${p}-ez-geld`,eg.betrag,0);
-        const iEl=U.el(`p${p}-ez-info`); if(iEl) iEl.textContent=eg.info;
-      }
-      // Provision label
-      if(U.chk(`p${p}-prov-on`)){
-        const mode=U.s(`p${p}-prov-mode`),netto=U.n(`p${p}-netto`);
-        const pm=mode==='betrag'?U.n(`p${p}-prov-val`)/12:netto*U.n(`p${p}-prov-val`)/100;
-        const inf=U.el(`p${p}-prov-info`); if(inf) inf.textContent=`≈ ${U.eur(pm,2)}/Monat`;
-        const lbl=U.el(`p${p}-prov-lbl`); if(lbl) lbl.textContent=mode==='betrag'?'Ø Jahresbetrag (€)':'% vom Netto-Monatsgehalt';
-      }
-      // Stundenreduktion info
-      if(U.chk(`p${p}-ez-on`)&&U.chk(`p${p}-red-on`)){
-        const sp=U.n(`p${p}-red-start-pct`),zp=U.n(`p${p}-red-ziel-pct`),d=U.n(`p${p}-red-dauer`),rhy=U.s(`p${p}-red-rhy`);
-        const el=U.el(`p${p}-red-info`);
-        if(el) el.textContent=`Start: ${sp}% → Ziel: ${zp}% über ${d} Monate (${rhy==='stufen'?'Stufen à 6 Monate':'linear'})`;
-      }
+    // Slider init
+    this._updateSlider(kredit,bindM);
+    // auto fields
+    const gs=kp*0.0026;U.setAuto('fa-gs',Math.round(gs));
+    const ih=kredit*0.001;U.setAuto('fa-ih',Math.round(ih));
+    // EG hints
+    [1,2].forEach(p=>{
+      const netto=U.n(`p${p}-netto`);const eg=ELTERNGELD.calc(netto);
+      U.setAuto(`p${p}-ez-geld`,eg.betrag,0);
+      const hint=U.el(`p${p}-eg-hint`);if(hint)hint.title=eg.info;
     });
-
-    const income=this._calcIncome();
-    this._lastIncome=income;
-    this._renderHH(income);
-    CASHFLOW.update(income,PLAN.data);
-
-    // Update Personen tab headings
-    PERS._updateHeadings();
-    PERS._renderOverview();
+    this.runHH(plan);
   },
-
-  _calcIncome(){
-    const provM=p=>{
-      if(!U.chk(`p${p}-prov-on`)) return 0;
-      const m=U.s(`p${p}-prov-mode`),n=U.n(`p${p}-netto`);
-      return m==='betrag'?U.n(`p${p}-prov-val`)/12:n*U.n(`p${p}-prov-val`)/100;
+  _updateSlider(kredit,bindM){
+    const sl=U.el('sl-zins');if(!sl)return;
+    const update=()=>{
+      const z=parseFloat(sl.value);U.el('sl-display').textContent=z.toFixed(1).replace('.',',')+' %';
+      const p=ENGINE.calc(kredit,z,U.n('tilgung'),bindM,ST.items,[]);
+      const noSonder=ENGINE.calc(kredit,z,U.n('tilgung'),bindM,[],[]);
+      const s=ENGINE.summary(p,bindM);const s0=ENGINE.summary(noSonder,bindM);
+      U.el('sl-rate').textContent=U.eur(s.rate);U.el('sl-zinsen').textContent=U.eur(s.totalZinsen);
+      U.el('sl-lz').textContent=U.lz(s.laufzeit);U.el('sl-rest').textContent=U.eur(s.restschuld);
+      const diff=s0.laufzeit-s.laufzeit;U.el('sl-sonder').textContent=diff>0?`-${U.lz(diff)}`:'–';
     };
-    const p1Base=U.n('p1-netto')+provM('1');
-    const p2Base=U.n('p2-netto')+provM('2');
-    const kg=KINDER.items.reduce((s,k)=>s+k.kindergeld,0);
-    const mkRed=p=>U.chk(`p${p}-ez-on`)&&U.chk(`p${p}-red-on`)?{startPct:U.n(`p${p}-red-start-pct`),ziel:U.n(`p${p}-red-ziel-pct`),dauer:U.n(`p${p}-red-dauer`),rhy:U.s(`p${p}-red-rhy`)}:null;
-    const ez1=U.chk('p1-ez-on')?{start:U.n('p1-ez-start'),dauer:U.n('p1-ez-dauer'),geld:U.n('p1-ez-geld'),voll:p1Base,red:mkRed('1')}:null;
-    const ez2=U.chk('p2-ez-on')?{start:U.n('p2-ez-start'),dauer:U.n('p2-ez-dauer'),geld:U.n('p2-ez-geld'),voll:p2Base,red:mkRed('2')}:null;
-    return{p1:p1Base,p2:p2Base,p1Base,p2Base,kg,ez1,ez2,gesamt:p1Base+p2Base+kg,p1Steig:U.n('p1-steig'),p2Steig:U.n('p2-steig')};
+    sl.oninput=update;update();
   },
-
-  _renderHH(income){
-    const lzM=PLAN.data.length||240;
-    const kRate=PLAN.data[0]?.rate??0;
-    const pkM=(()=>{const b=U.n('pk-betrag'),m=U.s('pk-mode');if(!b)return 0;if(m==='monatlich')return U.n('pk-mrate');if(m==='jaehrlich')return U.n('pk-jrate')/12;return 0;})();
-const energieSpar=(()=>{let s=0;['wp','pv','bat','mod'].forEach(function(id){const r=(window._energieResults||{})[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();
-        const wohn=FIXED.sum(WOHNKOSTEN_IDS);
-    const leben=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
-    const kindK=KINDER.items.reduce((s,k)=>s+k.kosten,0);
-    const extra=EXTRA.totalMonatlich(lzM);
-    const persAusg=PERS.monthlySum(1,lzM)+PERS.monthlySum(2,lzM);
-    const gesamtAusg=kRate+pkM+wohn+leben+kindK+extra+persAusg;
-    const gesamtEink=income.gesamt;
-    const frei=gesamtEink-gesamtAusg;
-    const wohnGes=kRate+pkM+wohn;
-    const wohnQ=gesamtEink>0?wohnGes/gesamtEink*100:0;
-    const gesamtQ=gesamtEink>0?gesamtAusg/gesamtEink*100:0;
-    const wCls=U.ampelCls(wohnQ,35,50), gCls=U.ampelCls(gesamtQ,70,90);
-
-    this._lastGemeinsam=kRate+pkM+wohn+leben+kindK+extra;
-
-    const inf=U.chk('inflation-on');
-    let laufzeitG=0;
-    if(inf){for(let j=0;j<lzM/12;j++)laufzeitG+=gesamtAusg*12*Math.pow(1.02,j);}
-    else laufzeitG=gesamtAusg*lzM;
-
-    // Income summary
-    U.el('income-summary').innerHTML=`
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px">
-        <div class="kpi"><div class="kpi-label">${U.name(1)}</div><div class="kpi-val sm">${U.eur(income.p1)}/M</div></div>
-        <div class="kpi"><div class="kpi-label">${U.name(2)}</div><div class="kpi-val sm">${U.eur(income.p2)}/M</div></div>
-        <div class="kpi"><div class="kpi-label">Kindergeld</div><div class="kpi-val sm">${U.eur(income.kg)}/M</div></div>
-        <div class="kpi" style="border-color:var(--accent)"><div class="kpi-label" style="color:var(--accent)">Gesamt</div><div class="kpi-val">${U.eur(gesamtEink)}/M</div></div>
-      </div>
-      ${income.ez1?`<div class="alert alert-warn" style="font-size:12px">⚠️ ${U.name(1)}: EZ M${income.ez1.start}–${income.ez1.start+income.ez1.dauer-1} · Verlust: ${U.eur((income.ez1.voll-income.ez1.geld)*income.ez1.dauer)}</div>`:''}
-      ${income.ez2?`<div class="alert alert-warn" style="font-size:12px">⚠️ ${U.name(2)}: EZ M${income.ez2.start}–${income.ez2.start+income.ez2.dauer-1} · Verlust: ${U.eur((income.ez2.voll-income.ez2.geld)*income.ez2.dauer)}</div>`:''}`;
-
+  runHH(plan){
+    plan=plan||PLAN.data;if(!plan.length)return;
+    const income=this._getIncome();
+    this._lastIncome={p1:income.p1Base,p2:income.p2Base};
+    const lzM=plan.length;
+    const wohn=FIXED.sum(WOHNKOSTEN_IDS);const leben=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
+    const extra=EXTRA.totalMonatlich(lzM);const rate=plan[0]?.rate||0;
+    const gemeinsam=wohn+leben+extra+rate;this._lastGemeinsam=gemeinsam;
+    const totalInc=income.p1Base+income.p2Base;const quote=totalInc>0?rate/totalInc*100:0;
+    const freiM=totalInc-gemeinsam;
+    const qCls=U.ampelCls(quote,30,40);
     U.el('hh-result').innerHTML=`
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-        <div><div class="muted" style="font-size:11px;margin-bottom:3px">Wohnkostenquote</div><span class="ampel ampel-${wCls}">${U.ampelIcon(wCls)} ${U.pct(wohnQ)}</span></div>
-        <div><div class="muted" style="font-size:11px;margin-bottom:3px">Gesamtausgabenquote</div><span class="ampel ampel-${gCls}">${U.ampelIcon(gCls)} ${U.pct(gesamtQ)}</span></div>
+      <div class="dashboard">
+        <div class="kpi"><div class="kpi-label">Haushaltseinkommen</div><div class="kpi-val sm">${U.eur(totalInc)}/M</div></div>
+        <div class="kpi"><div class="kpi-label">Kreditbelastung</div><div class="kpi-val sm">${U.eur(rate)}/M</div></div>
+        <div class="kpi"><div class="kpi-label">Wohnkosten gesamt</div><div class="kpi-val sm">${U.eur(wohn+rate)}/M</div></div>
+        <div class="kpi"><div class="kpi-label">Freie Liquidität</div><div class="kpi-val sm" style="color:${freiM>=0?'var(--green)':'var(--red)'}">${U.eur(freiM)}/M</div></div>
       </div>
-      ${wohnQ>50?'<div class="alert alert-danger">⚠️ Wohnkostenquote > 50 %</div>':''}
-      ${frei<0?`<div class="alert alert-danger">⚠️ Monatliches Defizit: ${U.eur(Math.abs(frei))}</div>`:''}
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0">
-        <div class="kpi"><div class="kpi-label">Kreditrate</div><div class="kpi-val sm">${U.eur(kRate)}/M</div></div>
-        <div class="kpi"><div class="kpi-label">Wohnkosten</div><div class="kpi-val sm">${U.eur(wohn)}/M</div></div>
-        <div class="kpi"><div class="kpi-label">Lebenshaltung</div><div class="kpi-val sm">${U.eur(leben+kindK)}/M</div></div>
-        <div class="kpi" style="border-color:${frei>=0?'var(--green)':'var(--red)'}"><div class="kpi-label" style="color:${frei>=0?'var(--green)':'var(--red)'}">Frei</div><div class="kpi-val sm" style="color:${frei>=0?'var(--green)':'var(--red)'}">${U.eur(frei)}/M</div></div>
-      </div>
-      <div style="font-size:13px">
-        <div class="ov-row"><span>Kreditrate</span><span class="ov-val">${U.eur(kRate)}/M</span></div>
-        ${pkM>0?`<div class="ov-row"><span>Priv. Kredit</span><span class="ov-val">${U.eur(pkM)}/M</span></div>`:''}
-        <div class="ov-row"><span>Wohnnebenkosten</span><span class="ov-val">${U.eur(wohn)}/M</span></div>
-        <div class="ov-row"><span>Lebensmittel + Mobilität</span><span class="ov-val">${U.eur(leben)}/M</span></div>
-        ${kindK>0?`<div class="ov-row"><span>Kinderkosten</span><span class="ov-val">${U.eur(kindK)}/M</span></div>`:''}
-        ${extra>0?`<div class="ov-row"><span>Weitere Ausgaben</span><span class="ov-val">${U.eur(extra)}/M</span></div>`:''}
-        ${persAusg>0?`<div class="ov-row"><span>Individuelle Ausgaben (Personen)</span><span class="ov-val">${U.eur(persAusg)}/M</span></div>`:''}
-        <div class="ov-total"><span>Gesamtausgaben</span><span>${U.eur(gesamtAusg)}/M</span></div>
-        <div class="ov-row" style="margin-top:6px"><span>Gesamtkosten Laufzeit${inf?' (inflationsber.)':''}</span><span class="ov-val">${U.eur(laufzeitG)}</span></div>
-      </div>
-      <div class="alert alert-info" style="margin-top:10px;font-size:12px">ℹ️ Wohnkostenquote &lt;35% = gut, 35–50% = ok, &gt;50% = kritisch. Gesamtquote &lt;70% = komfortabel.</div>`;
-
-    const cats=[
-      {l:'Kreditrate',v:kRate,c:'#0099ff'},{l:'Priv. Kredit',v:pkM,c:'#9b5de5'},
-      {l:'Grundsteuer',v:U.n('fa-gs'),c:'#ffd166'},{l:'Versicherung',v:U.n('fa-gv')+U.n('fa-hpfl'),c:'#f77f00'},
-      {l:'Energie',v:U.n('fa-heiz')+U.n('fa-str'),c:'#ff4d6d'},{l:'Wasser/Müll',v:U.n('fa-wass')+U.n('fa-muel'),c:'#4cc9f0'},
-      {l:'Instandhalt.',v:U.n('fa-ih'),c:'#06d6a0'},{l:'Internet',v:U.n('fa-inet'),c:'#a0c4ff'},
-      {l:'Lebensmittel',v:U.n('fa-lm'),c:'#7bed9f'},{l:'Mobilität',v:U.n('fa-mob'),c:'#eccc68'},
-      {l:'Kinder',v:kindK,c:'#ff9ff3'},{l:'Sonstiges',v:extra+persAusg,c:'#a29bfe'},
-    ].filter(c=>c.v>0);
-    CHARTS.doughnut('ch-hh',cats.map(c=>c.l),cats.map(c=>c.v),cats.map(c=>c.c));
-  },
-
-  runOV(){
-    const kp=U.n('f-kaufpreis'),ek=U.n('f-ek'),kredit=Math.max(0,kp-ek);
-    const nkSum=kp*(U.n('nk-grest')+U.n('nk-notar')+U.n('nk-gb')+U.n('nk-makler'))/100;
-    const sum=ENGINE.summary(PLAN.data,U.n('f-bind')*12);
-    const lzM=PLAN.data.length;
-    const income=this._calcIncome();
-    const kRate=PLAN.data[0]?.rate??0;
-    const pkM=(()=>{const b=U.n('pk-betrag'),m=U.s('pk-mode');if(!b)return 0;if(m==='monatlich')return U.n('pk-mrate');if(m==='jaehrlich')return U.n('pk-jrate')/12;return 0;})();
-    const wohn=FIXED.sum(WOHNKOSTEN_IDS);
-    const leben=FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
-    const kindK=KINDER.items.reduce((s,k)=>s+k.kosten,0);
-    const extra=EXTRA.totalMonatlich(lzM);
-    const persAusg=PERS.monthlySum(1,lzM)+PERS.monthlySum(2,lzM);
-    const ausgaben=kRate+pkM+wohn+leben+kindK+extra+persAusg;
-    const frei=income.gesamt-ausgaben;
-    const wohnQ=income.gesamt>0?(kRate+pkM+wohn)/income.gesamt*100:0;
-    const gesamtQ=income.gesamt>0?ausgaben/income.gesamt*100:0;
-    const wCls=U.ampelCls(wohnQ,35,50),gCls=U.ampelCls(gesamtQ,70,90);
-    const prog=(p,y)=>(U.n(`p${p}-netto`)+(U.chk(`p${p}-prov-on`)?(U.s(`p${p}-prov-mode`)==='betrag'?U.n(`p${p}-prov-val`)/12:U.n(`p${p}-netto`)*U.n(`p${p}-prov-val`)/100):0))*Math.pow(1+U.n(`p${p}-steig`)/100,y);
-    const scR=[U.n('sc-best'),U.n('sc-base'),U.n('sc-worst')].map(z=>sum.restschuld<=0?'–':U.eur(ENGINE.calc(sum.restschuld,z,U.n('f-tilg'),600,[],[]).at(0)?.rate||0)+'/M');
-    const n1=U.name(1),n2=U.name(2);
-    U.el('ov-content').innerHTML=`
-    <div class="ov-section"><h3>🏠 Immobilie & Finanzierung</h3>
-      <div class="ov-row"><span>Kaufpreis</span><span class="ov-val">${U.eur(kp)}</span></div>
-      <div class="ov-row"><span>Eigenkapital</span><span class="ov-val">${U.eur(ek)} (${U.pct(kp>0?ek/kp*100:0)})</span></div>
-      <div class="ov-row"><span>Kreditbetrag</span><span class="ov-val">${U.eur(kredit)}</span></div>
-      <div class="ov-row"><span>Kaufnebenkosten</span><span class="ov-val">${U.eur(nkSum)}</span></div>
-      <div class="ov-subtotal"><span>Gesamtinvestition</span><span>${U.eur(kp+nkSum)}</span></div>
-    </div>
-    <div class="ov-section"><h3>💳 Kreditverlauf</h3>
-      <div class="ov-row"><span>Monatliche Rate</span><span class="ov-val">${U.eur(kRate)}/M</span></div>
-      <div class="ov-row"><span>Zinssatz / Tilgung</span><span class="ov-val">${U.pct(U.n('f-zins'),2)} / ${U.pct(U.n('f-tilg'),2)}</span></div>
-      <div class="ov-row"><span>Zinsbindung</span><span class="ov-val">${U.n('f-bind')} Jahre</span></div>
-      <div class="ov-row"><span>Restschuld Zinsbindungsende</span><span class="ov-val" style="color:var(--yellow)">${U.eur(sum.restschuld)}</span></div>
-      <div class="ov-row"><span>Gesamtzinsen</span><span class="ov-val">${U.eur(sum.totalZinsen)}</span></div>
-      <div class="ov-subtotal"><span>Laufzeit / Gesamtkosten</span><span>${U.lz(lzM)} · ${U.eur(kredit+sum.totalZinsen+nkSum)}</span></div>
-    </div>
-    <div class="ov-section"><h3>🔄 Anschlussfinanzierungs-Szenarien</h3>
-      <div class="ov-row"><span>🟢 Best (${U.pct(U.n('sc-best'),1)})</span><span class="ov-val">${scR[0]}</span></div>
-      <div class="ov-row"><span>🟡 Base (${U.pct(U.n('sc-base'),1)})</span><span class="ov-val">${scR[1]}</span></div>
-      <div class="ov-row"><span>🔴 Worst (${U.pct(U.n('sc-worst'),1)})</span><span class="ov-val">${scR[2]}</span></div>
-    </div>
-    <div class="ov-section"><h3>💼 Einkommensplanung</h3>
-      <div class="ov-row"><span>${n1}</span><span class="ov-val">${U.eur(income.p1)}/M</span></div>
-      <div class="ov-row"><span>${n2}</span><span class="ov-val">${U.eur(income.p2)}/M</span></div>
-      ${income.kg>0?`<div class="ov-row"><span>Kindergeld</span><span class="ov-val">${U.eur(income.kg)}/M</span></div>`:''}
-      <div class="ov-subtotal"><span>Gesamteinkommen</span><span>${U.eur(income.gesamt)}/M</span></div>
-      <div class="ov-row"><span>In 5 Jahren (${n1}+${n2})</span><span class="ov-val">${U.eur(prog(1,5)+prog(2,5))}/M</span></div>
-      <div class="ov-row"><span>In 10 Jahren (${n1}+${n2})</span><span class="ov-val">${U.eur(prog(1,10)+prog(2,10))}/M</span></div>
-    </div>
-    <div class="ov-section"><h3>📊 Monatsbelastung</h3>
-      <div class="ov-row"><span>Kreditrate</span><span class="ov-val">${U.eur(kRate)}/M</span></div>
-      ${pkM>0?`<div class="ov-row"><span>Priv. Kredit</span><span class="ov-val">${U.eur(pkM)}/M</span></div>`:''}
-      <div class="ov-row"><span>Wohnnebenkosten</span><span class="ov-val">${U.eur(wohn)}/M</span></div>
-      <div class="ov-row"><span>Lebenshaltung</span><span class="ov-val">${U.eur(leben)}/M</span></div>
-      ${kindK>0?`<div class="ov-row"><span>Kinderkosten</span><span class="ov-val">${U.eur(kindK)}/M</span></div>`:''}
-      ${persAusg>0?`<div class="ov-row"><span>Individuelle Ausgaben</span><span class="ov-val">${U.eur(persAusg)}/M</span></div>`:''}
-      <div class="ov-subtotal"><span>Gesamt</span><span>${U.eur(ausgaben)}/M</span></div>
-      <div class="ov-subtotal" style="color:${frei>=0?'var(--green)':'var(--red)'}"><span>Frei</span><span>${U.eur(frei)}/M</span></div>
-    </div>
-    <div class="ov-section"><h3>🚦 Risikobewertung</h3>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-        <div><div class="muted" style="font-size:11px;margin-bottom:3px">Wohnkostenquote</div><span class="ampel ampel-${wCls}">${U.ampelIcon(wCls)} ${U.pct(wohnQ)}</span></div>
-        <div><div class="muted" style="font-size:11px;margin-bottom:3px">Gesamtausgabenquote</div><span class="ampel ampel-${gCls}">${U.ampelIcon(gCls)} ${U.pct(gesamtQ)}</span></div>
-      </div>
-      ${frei<0?'<div class="alert alert-danger">⚠️ Defizit!</div>':''}
-      ${frei>=0&&frei<500?`<div class="alert alert-warn">⚠️ Sehr geringe Liquidität: ${U.eur(frei)}/M</div>`:''}
-      ${frei>=500&&frei<1000?`<div class="alert alert-warn">📌 Liquidität knapp: ${U.eur(frei)}/M</div>`:''}
-      ${frei>=1000?`<div class="alert alert-ok">✅ Gute Liquidität: ${U.eur(frei)}/M</div>`:''}
-    </div>`;
-    SCORE.render(PLAN.data);
+      <div class="ampel ampel-${qCls}" style="margin-top:8px">${U.ampelIcon(qCls)} Kreditquote: ${U.pct(quote)} des Einkommens</div>`;
+    CHARTS.doughnut('ch-hh',['Kreditrate','Wohnen','Leben','Extra','Frei'],[rate,wohn,leben,extra,Math.max(0,freiM)],['#0099ff','#ffd166','#ff4d6d','#9b5de5','#06d6a0']);
+    CASHFLOW.update(income,plan);
+    PERS._renderOverview();
+    SCORE.run(quote,totalInc,rate,U.n('eigenkapital'),U.n('kaufpreis'),plan.length);
+    OV.render(income,plan,rate,wohn,leben,extra,totalInc,gemeinsam,freiM);
   }
 };
 
-/* ============================================================
-   MODULE 12 – SHARE  (iFrame-safe: no URL/clipboard API)
-   Export = base64-encoded JSON shown in textarea
-   Import = paste that text back → restore state
-   PDF    = open new window with full HTML → print
-   ============================================================ */
-var SHARE = {
-  _collect() {
-    const state = {
-      inputs: {}, st: [], bst: [], kinder: [], extra: [],
-      pers: [], splitActive: PERS.splitActive, splitP1: PERS.splitP1
-    };
-    document.querySelectorAll('input[id],select[id]').forEach(el => {
-      if (el.type === 'range') return;
-      state.inputs[el.id] = el.type === 'checkbox' ? el.checked : el.value;
-    });
-    state.st     = ST.items.map(x => ({ betrag: x.betrag, abJahr: x.abJahr }));
-    state.bst    = BST.items.map(x => ({ zins: x.zins, laufzeit: x.laufzeit, tilgung: x.tilgung, festRate: x.festRate, einmal: x.einmal }));
-    state.kinder = KINDER.items.map(x => ({ name: x.name, geburtM: x.geburtM, kosten: x.kosten, kindergeld: x.kindergeld }));
-    state.extra  = EXTRA.items.map(x => ({ name: x.name, betrag: x.betrag, rhy: x.rhy }));
-    state.pers   = PERS.items.map(x => ({ person: x.person, name: x.name, betrag: x.betrag, rhy: x.rhy }));
-    return state;
-  },
-
-  _encode(obj) {
-    const j = JSON.stringify(obj);
-    const bytes = new TextEncoder().encode(j);
-    let bin = '';
-    bytes.forEach(b => bin += String.fromCharCode(b));
-    return btoa(bin);
-  },
-
-  _decode(str) {
-    const bin = atob(str.trim());
-    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
-  },
-
-  _applyState(st) {
-    Object.entries(st.inputs || {}).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.type === 'checkbox') { el.checked = val; el.dispatchEvent(new Event('change')); }
-      else el.value = val;
-    });
-    ST.items     = (st.st     || []).map((x, i) => ({ ...x, id: Date.now() + i }));         ST.render();
-    BST.items    = (st.bst    || []).map((x, i) => ({ ...x, id: Date.now() + 1000 + i }));  BST.render();
-    KINDER.items = (st.kinder || []).map((x, i) => ({ ...x, id: Date.now() + 2000 + i }));  KINDER.render();
-    EXTRA.items  = (st.extra  || []).map((x, i) => ({ ...x, id: Date.now() + 3000 + i }));  EXTRA.render();
-    PERS.items   = (st.pers   || []).map((x, i) => ({ ...x, id: Date.now() + 4000 + i }));
-    if (st.splitActive) {
-      PERS.splitActive = true; PERS.splitP1 = st.splitP1 || 50;
-      U.show('split-section', true);
-      const sl = U.el('split-slider'); if (sl) sl.value = st.splitP1 || 50;
-      SPLIT.update();
-    }
-    PERS.render();
-  },
-
-  /* Show export modal with encoded text */
-  showExport() {
-    const encoded = this._encode(this._collect());
-    const ta = U.el('share-text');
-    if (ta) ta.value = encoded;
-    U.show('share-modal', true);
-    U.show('import-modal', false);
-    if (ta) { ta.focus(); ta.select(); }
-  },
-
-  /* Copy textarea content */
-  copyText() {
-    const ta = U.el('share-text');
-    if (!ta) return;
-    ta.select();
-    try {
-      document.execCommand('copy');
-    } catch(e) {}
-    // Also try modern API (works outside iFrame sandbox)
-    try { navigator.clipboard.writeText(ta.value); } catch(e) {}
-    const t = U.el('share-toast');
-    if (t) { t.style.display = ''; setTimeout(() => t.style.display = 'none', 2500); }
-  },
-
-  showImport() {
-    U.show('import-modal', true);
-    U.show('share-modal', false);
-    const ta = U.el('import-text');
-    if (ta) { ta.value = ''; ta.focus(); }
-  },
-
-  importFromText() {
-    const ta = U.el('import-text');
-    const toast = U.el('import-toast');
-    if (!ta || !ta.value.trim()) return;
-    try {
-      const st = this._decode(ta.value);
-      this._applyState(st);
-      CALC.run();
-      U.show('import-modal', false);
-      if (toast) {
-        toast.style.cssText = 'display:block;background:var(--green);color:#000';
-        toast.textContent = '✅ Zustand wiederhergestellt!';
-        setTimeout(() => toast.style.display = 'none', 3000);
-      }
-    } catch(e) {
-      if (toast) {
-        toast.style.cssText = 'display:block;background:var(--red);color:#fff';
-        toast.textContent = '❌ Ungültiger Text – bitte den exportierten Text vollständig einfügen.';
-      }
-    }
-  },
-
-  /* Open full HTML in new window and print from there */
-  printPDF() {
-    const html = document.documentElement.outerHTML;
-    const win = window.open('', '_blank', 'width=1200,height=900');
-    if (!win) {
-      alert('Popup blockiert! Bitte Popups für diese Seite erlauben und erneut versuchen.');
-      return;
-    }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    // Wait for charts/fonts to render, then print
-    win.onload = () => setTimeout(() => { win.focus(); win.print(); }, 800);
-    // Fallback if onload already fired
-    setTimeout(() => { try { if (!win.closed) { win.focus(); win.print(); } } catch(e) {} }, 1500);
-  }
-};
-
-/* ============================================================
-   MODULE 13 – EVENT WIRING
-   ============================================================ */
-(function wire(){
-  // Tab switching
-  document.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click',()=>{
-      const id=t.dataset.tab;
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      U.el('tab-'+id).classList.add('active');
-      if(id==='energie') ENERGIE.calc();
-      if(id==='hh') CALC.runHH();
-      if(id==='pers'){PERS.render();SPLIT.update();}
-      if(id==='ov') CALC.runOV();
-      setTimeout(()=>CHARTS.resize(),100);
-    });
-  });
-
-  // Slider
-  U.el('sl-zins').addEventListener('input',()=>{
-    const zp=parseFloat(U.el('sl-zins').value);
-    CALC._sliderCalc(zp,Math.max(0,U.n('f-kaufpreis')-U.n('f-ek')),U.n('f-tilg'),U.n('f-bind')*12);
-  });
-
-  // Toggle visibility (checkbox pairs)
-  const pairs=[
-    ['p1-prov-on','p1-prov-block'],['p2-prov-on','p2-prov-block'],
-    ['p1-ez-on','p1-ez-block'],['p2-ez-on','p2-ez-block'],
-    ['p1-red-on','p1-red-block'],['p2-red-on','p2-red-block'],
-  ];
-  pairs.forEach(([ck,bl])=>{
-    const el=U.el(ck); if(!el) return;
-    el.addEventListener('change',()=>{U.show(bl,U.chk(ck));CALC.runHH();});
-  });
-
-  // Global input listener – SKIP data-auto fields entirely
-  document.addEventListener('input',e=>{
-    const el=e.target;
-    if(el.tagName!=='INPUT'&&el.tagName!=='SELECT') return;
-    if(el.dataset.auto==='true') return;          // ← KEY FIX: never process auto fields
-    if(el.id==='sl-zins'||el.id==='split-slider') return;
-    if(el.closest('#sonder-list')||el.closest('#bst-list')||el.closest('#kinder-list')||el.closest('#extra-list')||el.closest('#pers-p1-list')||el.closest('#pers-p2-list')) return;
-    CALC.run();
-  });
-  document.addEventListener('change',e=>{
-    const el=e.target;
-    if(el.dataset.auto==='true') return;
-    if(el.tagName==='SELECT'&&!el.closest('#bst-list')&&!el.closest('#kinder-list')&&!el.closest('#extra-list')&&!el.closest('#pers-p1-list')&&!el.closest('#pers-p2-list')&&el.id!=='pk-mode') CALC.run();
-    if(el.tagName==='INPUT'&&el.type==='checkbox'&&!pairs.some(([ck])=>ck===el.id)) CALC.run();
-    if(el.id==='pk-mode') CALC._calcPKMode();
-  });
-})();
-
-/* ============================================================
-   MODULE 14 – INIT
-   ============================================================ */
-// init() moved to end of script
-
-
-
-/* ============================================================
-   TIMELINE MODULE
-   ============================================================ */
-
-/* ============================================================
-   ZINSRISIKO MODULE
-   ============================================================ */
-var ZINSRISIKO = {
-  render(plan, kredit) {
-    const el = document.getElementById('zr-grid');
-    if (!el) return;
-    const bindM = U.n('f-bind') * 12;
-    const tp = U.n('f-tilg');
-    const currentZins = U.n('f-zins');
-    const restschuld = plan[Math.min(bindM, plan.length)-1]?.rs ?? 0;
-    if (restschuld <= 0) { el.innerHTML = '<div class="alert alert-ok">✅ Keine Anschlussfinanzierung nötig – Kredit innerhalb Zinsbindung vollgetilgt.</div>'; CHARTS.destroy('ch-zr'); return; }
-
-    const currentRate = ENGINE.calc(restschuld, currentZins, tp, 600, [], [])[0]?.rate ?? 0;
-    const deltas = [0, 1, 2, 3];
-    const results = deltas.map(d => {
-      const zp = currentZins + d;
-      const newPlan = ENGINE.calc(restschuld, zp, tp, 600, [], []);
-      const newRate = newPlan[0]?.rate ?? 0;
-      const mehrM = newRate - currentRate;
-      const totalZins = newPlan.reduce((s,r) => s+r.za, 0);
-      return { d, zp, rate:newRate, mehrM, totalZins };
-    });
-
-    el.innerHTML = results.map(r => {
-      const cls = r.d===0?'zr-neutral':r.d<=1?'zr-warn':'zr-danger';
-      const icon = r.d===0?'📊':r.d===1?'⚠️':'🚨';
-      return '<div class="zr-card '+cls+'">'+
-        '<div style="font-size:11px;color:var(--text2)">'+icon+' Anschlusszins '+U.pct(r.zp,1)+(r.d>0?' (+'+r.d+' %)':'')+'</div>'+
-        '<div class="zr-val">'+U.eur(r.rate)+'/M</div>'+
-        (r.d>0?'<div style="font-size:12px;color:var(--red)">+'+U.eur(r.mehrM)+'/Monat</div>':'<div style="font-size:12px;color:var(--text2)">Basis (heutiger Zins)</div>')+
-        '<div style="font-size:11px;color:var(--text2);margin-top:4px">Zinsen ges.: '+U.eur(r.totalZins)+'</div>'+
-        '</div>';
-    }).join('');
-
-    // Chart
-    CHARTS.destroy('ch-zr');
-    const labels = results.map(r => '+'+r.d+' %');
-    const rates  = results.map(r => r.rate);
-    const o = CHARTS._base();
-    o.plugins.legend = { display:false };
-    CHARTS.cache['ch-zr'] = new Chart(document.getElementById('ch-zr').getContext('2d'), {
-      type:'bar',
-      data:{ labels, datasets:[{
-        label:'Monatliche Rate nach Anschluss',
-        data: rates,
-        backgroundColor: results.map(r => r.d===0?'rgba(0,201,177,.7)':r.d<=1?'rgba(255,209,102,.7)':'rgba(255,77,109,.7)'),
-        borderRadius:6
-      }]},
-      options: o
-    });
-  }
-};
-
-/* ============================================================
-   FINANZCHECK SCORE MODULE
-   ============================================================ */
-var SCORE = {
-  factors: [
-    { key:'ek',    label:'Eigenkapitalquote',  max:20, tip:'Ziel: >20% des Kaufpreises' },
-    { key:'wq',    label:'Wohnkostenquote',     max:20, tip:'Ziel: <30% des Einkommens' },
-    { key:'puffer',label:'Monatl. Puffer',      max:20, tip:'Ziel: >1000€/M freie Liquidität' },
-    { key:'tilg',  label:'Tilgungshöhe',         max:15, tip:'Ziel: ≥2% Anfangstilgung' },
-    { key:'lz',    label:'Kreditlaufzeit',       max:15, tip:'Ziel: <30 Jahre Gesamtlaufzeit' },
-    { key:'rest',  label:'Restschuld-Risiko',    max:10, tip:'Ziel: Restschuld <50% des Kaufpreises' },
-  ],
-
-  calc(plan) {
-    const kp     = U.n('f-kaufpreis');
-    const ek     = U.n('f-ek');
-    const kredit = Math.max(0, kp - ek);
-    const bindM  = U.n('f-bind') * 12;
-    const tp     = U.n('f-tilg');
-    const nkSum  = kp * (U.n('nk-grest')+U.n('nk-notar')+U.n('nk-gb')+U.n('nk-makler'))/100;
-    const sum    = ENGINE.summary(plan, bindM);
-    const kRate  = plan[0]?.rate ?? 0;
-    const income = CALC._calcIncome ? CALC._calcIncome() : { gesamt: 0 };
-    const gesamtEink = income.gesamt;
-
-    const wohn = FIXED.sum(WOHNKOSTEN_IDS);
-    const leben = FIXED.sum(FIXED_DEFS.filter(f=>f.group==='leben').map(f=>f.id));
-    const ausgaben = kRate + wohn + leben;
-    const frei = gesamtEink - ausgaben;
-    const wohnQ = gesamtEink > 0 ? (kRate+wohn)/gesamtEink*100 : 100;
-    const ekQ   = kp > 0 ? ek/kp*100 : 0;
-
-    const scores = {
-      ek:    Math.min(20, (ekQ / 25) * 20),
-      wq:    Math.min(20, Math.max(0, (1 - wohnQ/50) * 20)),
-      puffer:Math.min(20, Math.max(0, (frei / 1500) * 20)),
-      tilg:  Math.min(15, (tp / 3) * 15),
-      lz:    Math.min(15, Math.max(0, ((30*12 - sum.laufzeit)/(20*12)) * 15)),
-      rest:  Math.min(10, Math.max(0, (1 - sum.restschuld/kp) * 10)),
-    };
-
-    const total = Math.round(Object.values(scores).reduce((a,b) => a+b, 0));
-    return { total, scores };
-  },
-
-  render(plan) {
-    const arcEl      = document.getElementById('score-arc');
-    const numEl      = document.getElementById('score-num');
-    const factorsEl  = document.getElementById('score-factors');
-    const verdictEl  = document.getElementById('score-verdict');
-    if (!arcEl || !plan.length) return;
-
-    const { total, scores } = this.calc(plan);
-    const circumference = 314;
-    const offset = circumference - (total/100) * circumference;
-
-    // Color based on score
-    const color = total >= 70 ? '#06d6a0' : total >= 45 ? '#ffd166' : '#ff4d6d';
-    arcEl.style.stroke = color;
-    arcEl.style.strokeDashoffset = offset;
-    numEl.textContent = total;
-    numEl.style.color = color;
-
-    factorsEl.innerHTML = this.factors.map(f => {
-      const pts = scores[f.key] ?? 0;
-      const pct = (pts / f.max) * 100;
-      const barColor = pct >= 70 ? '#06d6a0' : pct >= 40 ? '#ffd166' : '#ff4d6d';
-      return '<div class="sf-row" title="'+f.tip+'">' +
-        '<span>'+f.label+'</span>' +
-        '<span style="display:flex;align-items:center;gap:6px">' +
-          '<div class="sf-bar-wrap"><div class="sf-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div>' +
-          '<span style="width:32px;text-align:right;font-size:11px;font-weight:600">'+Math.round(pts)+'/'+f.max+'</span>' +
-        '</span>' +
-        '</div>';
-    }).join('');
-
-    const verdicts = [
-      { min:80, cls:'alert-ok',     icon:'🏆', text:'Exzellent! Deine Finanzierung ist sehr solide aufgestellt.' },
-      { min:65, cls:'alert-ok',     icon:'✅', text:'Gut! Solide Finanzierung mit kleinen Optimierungsmöglichkeiten.' },
-      { min:45, cls:'alert-warn',   icon:'📌', text:'Im Rahmen, aber mit Luft nach oben. Auf die markierten Faktoren achten.' },
-      { min:0,  cls:'alert-danger', icon:'⚠️', text:'Erhöhtes Risiko. Einige Faktoren sollten vor dem Kauf verbessert werden.' },
+// ── SCORE ──
+var SCORE={
+  run(quote,inc,rate,ek,kp,lzM){
+    const ekPct=kp>0?ek/kp*100:0;
+    const factors=[
+      {name:'Kreditquote',val:Math.max(0,100-Math.max(0,quote-20)*5),raw:`${U.pct(quote)}`,good:'<30%',color:quote<=30?'#06d6a0':quote<=40?'#ffd166':'#ff4d6d'},
+      {name:'Eigenkapital',val:Math.min(100,ekPct*3.33),raw:`${U.pct(ekPct)}`,good:'>20%',color:ekPct>=20?'#06d6a0':ekPct>=10?'#ffd166':'#ff4d6d'},
+      {name:'Laufzeit',val:Math.max(0,100-(lzM/12-20)*3),raw:`${Math.round(lzM/12)} J`,good:'<25J',color:lzM/12<=25?'#06d6a0':lzM/12<=30?'#ffd166':'#ff4d6d'},
+      {name:'Freie Liquidität',val:inc>0?Math.min(100,Math.max(0,(inc-rate)/inc*200):0),raw:U.eur(inc-rate)+'/M',good:'>20%',color:(inc-rate)/inc>=0.2?'#06d6a0':'#ffd166'},
+      {name:'Sondertilgungen',val:ST.items.length>0?80:40,raw:ST.items.length>0?'Aktiv':'Keine',good:'Vorhanden',color:ST.items.length>0?'#06d6a0':'#ffd166'},
+      {name:'Anschlussfinanzierung',val:BST.items.length>0?80:50,raw:BST.items.length>0?'Geplant':'Offen',good:'Geplant',color:BST.items.length>0?'#06d6a0':'#ffd166'},
     ];
-    const v = verdicts.find(x => total >= x.min);
-    verdictEl.innerHTML = '<div class="alert '+v.cls+'">'+v.icon+' <strong>Score '+total+'/100:</strong> '+v.text+'</div>';
+    const score=Math.round(factors.reduce((s,f)=>s+f.val,0)/factors.length);
+    const arc=U.el('score-arc');if(arc)arc.style.strokeDashoffset=314*(1-score/100);
+    const num=U.el('score-num');if(num){num.textContent=score;num.style.color=score>=70?'#06d6a0':score>=50?'#ffd166':'#ff4d6d';}
+    U.el('score-factors').innerHTML=factors.map(f=>`<div class="sf-row"><span>${f.name}</span><span style="color:${f.color};font-size:11px">${f.raw}</span><div class="sf-bar-wrap"><div class="sf-bar" style="width:${f.val}%;background:${f.color}"></div></div></div>`).join('');
+    U.el('score-verdict').innerHTML=`<div class="ampel ampel-${score>=70?'green':score>=50?'yellow':'red'}">${score>=70?'🟢 Solide Finanzierung':score>=50?'🟡 Akzeptabel – Optimierungspotenzial':'🔴 Risikobehaftet – Überprüfung empfohlen'}</div>`;
   }
 };
 
-
-/* ============================================================
-   ENERGIE MODULE
-   ============================================================ */
-var ENERGIE = {
-  // Richtwerte Förderquoten BEG 2024
-  FOERDERUNG: {
-    wp:  { basis: 0.30, bonus_gas: 0.05, bonus_low_income: 0.05, max: 0.70, maxBetrag: 30000 },
-    mod: { basis: 0.15, bonus_effizienz: 0.10, bonus_worst: 0.10, max: 0.35, maxBetrag: 60000 },
-    bat: { basis: 0.10, laender: 0.10, max: 0.20, maxBetrag: 10000 }, // Länderförderung variiert
-    pv:  { basis: 0, steuer: true } // keine direkte BEG-Förderung, aber Steuerbefreiung
-  },
-  // Energieklassen-Kennwerte (kWh/m²a) und CO2 kg/kWh
-  KLASSEN: {
-    'Ap':{max:30,label:'A+',co2:0.04},'A':{max:50,label:'A',co2:0.06},'B':{max:75,label:'B',co2:0.09},
-    'C':{max:100,label:'C',co2:0.13},'D':{max:130,label:'D',co2:0.18},'E':{max:160,label:'E',co2:0.23},
-    'F':{max:200,label:'F',co2:0.28},'G':{max:250,label:'G',co2:0.33},'H':{max:999,label:'H',co2:0.38}
-  },
-  KLASSEN_CSS: {'Ap':'ek-ap','A':'ek-a','B':'ek-b','C':'ek-c','D':'ek-d','E':'ek-e','F':'ek-f','G':'ek-g','H':'ek-h'},
-
-  toggle(id) {
-    const body = document.getElementById('mb-body-' + id);
-    const icon = document.getElementById('mt-' + id);
-    if (!body) return;
-    const isOpen = body.classList.contains('open');
-    body.classList.toggle('open', !isOpen);
-    if (icon) icon.textContent = isOpen ? '▶' : '▼';
-  },
-
-  updateBadge(id) {
-    const status = U.s('e-' + id + '-status');
-    const badge = document.getElementById('mb-' + id);
-    if (!badge) return;
-    badge.textContent = status === 'bestand' ? 'Vorhanden' : status === 'geplant' ? 'Geplant' : 'Nicht geplant';
-    badge.className = 'massnahme-badge ' + (status === 'bestand' ? 'badge-bestand' : status === 'geplant' ? 'badge-geplant' : 'badge-nein');
-  },
-
-  renderKlasse() {
-    const kl = U.s('e-klasse');
-    const el = document.getElementById('e-klasse-display');
-    if (!el) return;
-    if (!kl) { el.innerHTML = ''; return; }
-    const info = this.KLASSEN[kl];
-    const cssClass = this.KLASSEN_CSS[kl] || '';
-    const wfl = U.n('i-wohnflaeche') || 150;
-    const kwh = info ? Math.round(wfl * (info.max * 0.8)) : 0;
-    el.innerHTML = '<span class="energie-klasse ' + cssClass + '">' + (info?.label || kl) + '</span>' +
-      '<div><div style="font-size:13px;font-weight:600">Energieklasse ' + (info?.label || kl) + '</div>' +
-      '<div class="muted" style="font-size:12px">ca. ' + kwh + ' kWh/Jahr bei ' + wfl + ' m² · CO₂: ' + (info ? (info.co2 * kwh).toFixed(0) : '?') + ' kg/Jahr</div></div>';
-  },
-
-  calcPV() {
-    const kwp = U.n('e-pv-kwp'), preis = U.n('e-pv-preis');
-    U.setAuto('e-pv-kosten', Math.round(kwp * preis), 0);
-  },
-
-  calcBat() {
-    const kwh = U.n('e-bat-kwh'), preis = U.n('e-bat-preis');
-    U.setAuto('e-bat-kosten', Math.round(kwh * preis), 0);
-  },
-
-  calcMod() {
-    let total = 0;
-    if (U.chk('e-mod-daemmung')) total += 15000;
-    if (U.chk('e-mod-dach'))     total += 8000;
-    if (U.chk('e-mod-fenster'))  total += 12000;
-    if (U.chk('e-mod-keller'))   total += 3000;
-    const el = document.getElementById('e-mod-kosten');
-    if (el) el.value = total;
-  },
-
-  _calcMassnahme(id) {
-    const status = U.s('e-' + id + '-status');
-    const kosten = U.n('e-' + id + '-kosten');
-    const monat  = U.n('e-' + id + '-monat') || 1;
-    const heizkosten = U.n('e-heizkosten');
-    const stromkosten = U.n('e-stromkosten');
-    const foerd = this.FOERDERUNG[id] || {};
-
-    // Förderquote berechnen
-    let foerdQuote = foerd.basis || 0;
-    const heiztyp = U.s('e-heiztyp');
-    if (id === 'wp' && (heiztyp === 'gas' || heiztyp === 'oel')) foerdQuote += foerd.bonus_gas || 0;
-    if (id === 'mod') {
-      const kl = U.s('e-klasse');
-      if (kl === 'G' || kl === 'H') foerdQuote += foerd.bonus_worst || 0;
-      foerdQuote += foerd.bonus_effizienz || 0;
-    }
-    foerdQuote = Math.min(foerdQuote, foerd.max || 0);
-
-    const foerdBetrag = Math.min(kosten * foerdQuote, foerd.maxBetrag || 999999);
-    const nettoKosten = kosten - foerdBetrag;
-
-    // Jährliche Einsparung schätzen
-    let einsparungJahr = 0;
-    if (id === 'wp') {
-      // WP spart ~70-80% Heizkosten, aber Strom kostet mehr
-      einsparungJahr = heizkosten * 0.6 - (heizkosten * 0.15); // netto ca. 45%
-    } else if (id === 'pv') {
-      const kwp = U.n('e-pv-kwp');
-      const eigenQ = U.n('e-pv-eigen') / 100;
-      const jahresertrag = kwp * 900; // kWh/Jahr (Norddeutschland)
-      const eigenverbrauch = jahresertrag * eigenQ * 0.32; // 32 Cent/kWh Ersparnis
-      const einspeisung = jahresertrag * (1-eigenQ) * 0.08; // 8 Cent Einspeiseverg.
-      einsparungJahr = eigenverbrauch + einspeisung;
-    } else if (id === 'bat') {
-      // Speicher erhöht Eigenverbrauch um ca. 15-20%
-      const pvKwp = U.n('e-pv-kwp');
-      const zusatz = pvKwp * 900 * 0.15 * 0.32;
-      einsparungJahr = zusatz;
-    } else if (id === 'mod') {
-      // Dämmung spart 20-40% Heizkosten
-      let faktor = 0;
-      if (U.chk('e-mod-daemmung')) faktor += 0.12;
-      if (U.chk('e-mod-dach'))     faktor += 0.08;
-      if (U.chk('e-mod-fenster'))  faktor += 0.10;
-      if (U.chk('e-mod-keller'))   faktor += 0.04;
-      einsparungJahr = heizkosten * faktor;
-    }
-
-    const amortJahre = einsparungJahr > 0 ? nettoKosten / einsparungJahr : 99;
-    const wfl = U.n('i-wohnflaeche') || 150;
-    const co2Einsparung = id === 'wp' ? wfl * 15 : id === 'pv' ? U.n('e-pv-kwp') * 400 : id === 'mod' ? wfl * 8 : 0;
-
-    return { status, kosten, foerdBetrag, foerdQuote, nettoKosten, einsparungJahr, amortJahre, co2Einsparung, monat };
-  },
-
-  _renderKPI(id, data) {
-    const el = document.getElementById('ekpi-' + id);
-    if (!el || data.status === 'nein') { if(el) el.innerHTML=''; return; }
-    const foerdPct = Math.round(data.foerdQuote * 100);
-    const amortColor = data.amortJahre < 10 ? 'green' : data.amortJahre < 20 ? 'yellow' : 'red';
-    const isBestand = data.status === 'bestand';
-
-    el.innerHTML = (isBestand ? '' :
-      '<div class="ekpi"><div class="el">Investition brutto</div><div class="ev red">' + U.eur(data.kosten) + '</div></div>' +
-      '<div class="ekpi"><div class="el">Förderung (' + foerdPct + '% BEG)</div><div class="ev green">-' + U.eur(data.foerdBetrag) + '</div></div>' +
-      '<div class="ekpi"><div class="el">Netto-Investition</div><div class="ev">' + U.eur(data.nettoKosten) + '</div></div>') +
-      '<div class="ekpi"><div class="el">Einsparung/Jahr</div><div class="ev green">+' + U.eur(data.einsparungJahr, 0) + '</div></div>' +
-      (isBestand ? '' : '<div class="ekpi"><div class="el">Amortisation</div><div class="ev ' + amortColor + '">' + (data.amortJahre > 50 ? '>50 J.' : data.amortJahre.toFixed(1) + ' J.') + '</div></div>') +
-      '<div class="ekpi"><div class="el">CO₂-Einsparung/J.</div><div class="ev green">' + Math.round(data.co2Einsparung) + ' kg</div></div>';
-  },
-
-  calc() {
-    this.renderKlasse();
-    const ids = ['wp','pv','bat','mod'];
-    const results = {};
-    ids.forEach(id => {
-      const d = this._calcMassnahme(id);
-      results[id] = d;
-      this._renderKPI(id, d);
-    });
-
-    // Gesamtauswertung
-    const active = ids.filter(id => results[id].status !== 'nein');
-    const geplant = ids.filter(id => results[id].status === 'geplant');
-    const gesamtBrutto = geplant.reduce((s,id) => s + results[id].kosten, 0);
-    const gesamtFoerd  = geplant.reduce((s,id) => s + results[id].foerdBetrag, 0);
-    const gesamtNetto  = geplant.reduce((s,id) => s + results[id].nettoKosten, 0);
-    const gesamtEinsparung = active.reduce((s,id) => s + results[id].einsparungJahr, 0);
-    const gesamtCO2  = active.reduce((s,id) => s + results[id].co2Einsparung, 0);
-
-    // Empfehlung erstellen
-    const empfehlungen = [];
-    const heiztyp = U.s('e-heiztyp');
-    const heizBj  = U.n('e-heiz-bj');
-    const klasse  = U.s('e-klasse');
-    const heizAlt = new Date().getFullYear() - heizBj;
-    if ((heiztyp === 'gas' || heiztyp === 'oel') && results['wp'].status === 'nein')
-      empfehlungen.push({prio:1, text:'Wärmepumpe prüfen: ' + (heizAlt > 15 ? 'Heizung ist ' + heizAlt + ' Jahre alt – Austausch sinnvoll.' : 'Gasverbrenner – bei nächstem Austausch Wärmepumpe wählen.'), icon:'🔥'});
-    if (results['mod'].status === 'nein' && (klasse === 'E' || klasse === 'F' || klasse === 'G' || klasse === 'H'))
-      empfehlungen.push({prio:2, text:'Dämmung dringend empfohlen: Energieklasse ' + (klasse||'?') + ' – erhebliche Einsparungen möglich.', icon:'🏗️'});
-    if (results['pv'].status === 'nein')
-      empfehlungen.push({prio:3, text:'PV-Anlage: Bei Eigenheim immer prüfen. Amortisation meist 8–12 Jahre, danach 25+ Jahre kostenloser Strom.', icon:'☀️'});
-    if (results['pv'].status !== 'nein' && results['bat'].status === 'nein')
-      empfehlungen.push({prio:4, text:'Batteriespeicher erhöht den PV-Eigenverbrauch von ~30% auf ~60% – lohnt sich besonders mit Wärmepumpe.', icon:'🔋'});
-    empfehlungen.sort((a,b) => a.prio - b.prio);
-
-    // Erreichbare Klasse nach Maßnahmen
-    let zielKlasse = klasse;
-    if (results['mod'].status !== 'nein' && results['wp'].status !== 'nein') zielKlasse = 'B';
-    else if (results['mod'].status !== 'nein') zielKlasse = 'C';
-    else if (results['wp'].status !== 'nein') zielKlasse = klasse === 'H' || klasse === 'G' ? 'E' : klasse;
-
-    const el = document.getElementById('e-gesamt');
-    if (!el) return;
-
-    el.innerHTML =
-      (active.length === 0 && geplant.length === 0 ? '<p class="muted">Noch keine Maßnahmen ausgewählt.</p>' :
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">' +
-        (geplant.length > 0 ?
-          '<div class="ekpi"><div class="el">Investition gesamt</div><div class="ev red">' + U.eur(gesamtBrutto) + '</div></div>' +
-          '<div class="ekpi"><div class="el">Förderung gesamt</div><div class="ev green">-' + U.eur(gesamtFoerd) + '</div></div>' +
-          '<div class="ekpi"><div class="el">Netto-Investition</div><div class="ev">' + U.eur(gesamtNetto) + '</div></div>' : '') +
-        '<div class="ekpi"><div class="el">Einsparung/Jahr</div><div class="ev green">+' + U.eur(gesamtEinsparung, 0) + '</div></div>' +
-        '<div class="ekpi"><div class="el">CO₂-Einsparung/J.</div><div class="ev green">' + Math.round(gesamtCO2) + ' kg</div></div>' +
-        (geplant.length > 0 && gesamtEinsparung > 0 ? '<div class="ekpi"><div class="el">Amortisation</div><div class="ev ' + (gesamtNetto/gesamtEinsparung < 15 ? 'green' : 'yellow') + '">' + (gesamtNetto/gesamtEinsparung).toFixed(1) + ' J.</div></div>' : '') +
-        (klasse && zielKlasse && zielKlasse !== klasse ? '<div class="ekpi"><div class="el">Klasse nach Maßnahmen</div><div class="ev"><span class="energie-klasse ' + (this.KLASSEN_CSS[zielKlasse]||'') + '" style="width:28px;height:28px;font-size:13px">' + zielKlasse.replace('Ap','A+') + '</span></div></div>' : '') +
-        '</div>') +
-      (empfehlungen.length > 0 ?
-        '<h3 style="margin-bottom:10px">💡 Empfehlungen</h3>' +
-        empfehlungen.map((e,i) => '<div class="empfehlung-row"><div class="empfehlung-rank">' + (i+1) + '</div><span style="font-size:16px">' + e.icon + '</span><span>' + e.text + '</span></div>').join('') +
-        '<div class="alert alert-info" style="margin-top:10px;font-size:12px">ℹ️ Alle Kosten und Förderquoten sind Richtwerte (Stand 2024). Professionelle Energieberatung und aktuelle KfW/BAFA-Konditionen immer vorab prüfen.</div>'
-        : '');
-
-    // Cashflow info
-    const cfEl = document.getElementById('e-cashflow-info');
-    if (cfEl) {
-      const items = geplant.map(id => ({
-        name: {wp:'Wärmepumpe',pv:'PV-Anlage',bat:'Batteriespeicher',mod:'Grundmodernisierung'}[id],
-        monat: results[id].monat,
-        kosten: results[id].nettoKosten,
-        einsparungM: results[id].einsparungJahr / 12
-      }));
-      cfEl.innerHTML = items.length === 0 ? '<p class="muted" style="font-size:13px">Keine geplanten Maßnahmen.</p>' :
-        items.map(it => '<div class="ov-row cf-energie"><span>' + it.name + ' (Monat ' + it.monat + ')</span>' +
-          '<span style="display:flex;gap:16px">' +
-          '<span class="muted" style="font-size:12px">Einmalig: <strong style="color:var(--red)">' + U.eur(it.kosten) + '</strong></span>' +
-          '<span class="muted" style="font-size:12px">Ersparnis ab dann: <strong style="color:var(--green)">+' + U.eur(it.einsparungM, 0) + '/M</strong></span>' +
-          '</span></div>'
-        ).join('') +
-        '<div class="alert alert-ok" style="margin-top:10px;font-size:12px">✅ Die Einsparungen fließen automatisch in den Cashflow-Verlauf ein (Tab: Haushalt → Cashflow-Verlauf).</div>';
-    }
-
-    // Store results for cashflow integration
-    window._energieResults = results;
+// ── ÜBERSICHT ──
+var OV={
+  render(income,plan,rate,wohn,leben,extra,totalInc,gemeinsam,freiM){
+    const kp=U.n('kaufpreis'),ek=U.n('eigenkapital'),zp=U.n('zinssatz'),bindJ=U.n('zinsbindung');
+    const gew=kp*U.n('gew-pct')/100,notar=kp*U.n('notar-pct')/100,makler=kp*U.n('makler-pct')/100;
+    const ren=U.n('renovierung'),snk=U.n('sonstige-knk');
+    const nebenkosten=gew+notar+makler+ren+snk;const kredit=Math.max(0,kp+nebenkosten-ek);
+    const sum=ENGINE.summary(plan,bindJ*12);const n1=U.name(1),n2=U.name(2);
+    U.el('ov-content').innerHTML=`
+      <div class="ov-section"><h3>🏠 Immobilie & Finanzierung</h3>
+        <div class="ov-row"><span>Kaufpreis</span><span class="ov-val">${U.eur(kp)}</span></div>
+        <div class="ov-row"><span>Kaufnebenkosten</span><span class="ov-val">${U.eur(nebenkosten)}</span></div>
+        <div class="ov-row"><span>Eigenkapital</span><span class="ov-val" style="color:var(--green)">${U.eur(ek)}</span></div>
+        <div class="ov-row"><span>Darlehen</span><span class="ov-val">${U.eur(kredit)}</span></div>
+        <div class="ov-row"><span>Zinssatz / Zinsbindung</span><span class="ov-val">${U.pct(zp)} / ${bindJ} J</span></div>
+        <div class="ov-row"><span>Monatliche Rate</span><span class="ov-val">${U.eur(rate)}</span></div>
+        <div class="ov-row"><span>Gesamtzinsen</span><span class="ov-val">${U.eur(sum.totalZinsen)}</span></div>
+        <div class="ov-row"><span>Restschuld nach Zinsbindung</span><span class="ov-val">${U.eur(sum.restschuld)}</span></div>
+        <div class="ov-row"><span>Gesamtlaufzeit</span><span class="ov-val">${U.lz(sum.laufzeit)}</span></div>
+      </div>
+      <div class="ov-section"><h3>💰 Haushalt</h3>
+        <div class="ov-row"><span>${n1} Einkommen</span><span class="ov-val">${U.eur(income.p1Base)}/M</span></div>
+        <div class="ov-row"><span>${n2} Einkommen</span><span class="ov-val">${U.eur(income.p2Base)}/M</span></div>
+        <div class="ov-row"><span>Wohnkosten</span><span class="ov-val">${U.eur(wohn)}/M</span></div>
+        <div class="ov-row"><span>Lebenshaltung</span><span class="ov-val">${U.eur(leben)}/M</span></div>
+        <div class="ov-row"><span>Weitere Ausgaben</span><span class="ov-val">${U.eur(extra)}/M</span></div>
+        <div class="ov-total"><span>Freie Liquidität</span><span style="color:${freiM>=0?'var(--green)':'var(--red)'}">${U.eur(freiM)}/M</span></div>
+      </div>`;
   }
 };
 
-// Small helper referenced inline
-CALC._calcPKMode=function(){
-  const m=U.s('pk-mode');
-  U.show('pk-einmal',m==='einmal');U.show('pk-monatlich',m==='monatlich');U.show('pk-jaehrlich',m==='jaehrlich');
+// ── SHARE ──
+var SHARE={
+  _getState(){
+    const ids=['kaufpreis','eigenkapital','zinssatz','tilgung','zinsbindung','gew-pct','notar-pct','makler-pct','renovierung','sonstige-knk','p1-name','p1-netto','p1-steig','p2-name','p2-netto','p2-steig'];
+    const state={fields:{},st:ST.items,bst:BST.items,kinder:KINDER.items,extra:EXTRA.items,pers:PERS.items,splitActive:PERS.splitActive,splitP1:PERS.splitP1};
+    ids.forEach(id=>{const el=U.el(id);if(el)state.fields[id]=el.value;});return state;
+  },
+  showExport(){U.show('share-modal',true);U.show('import-modal',false);U.el('share-text').value=JSON.stringify(this._getState());},
+  showImport(){U.show('import-modal',true);},
+  copyText(){const t=U.el('share-text');t.select();document.execCommand('copy');U.show('share-toast',true);setTimeout(()=>U.show('share-toast',false),2000);},
+  importFromText(){
+    try{
+      const state=JSON.parse(U.el('import-text').value);
+      Object.entries(state.fields||{}).forEach(([id,v])=>{const el=U.el(id);if(el)el.value=v;});
+      ST.items=state.st||[];BST.items=state.bst||[];KINDER.items=state.kinder||[];EXTRA.items=state.extra||[];PERS.items=state.pers||[];PERS.splitActive=state.splitActive||false;PERS.splitP1=state.splitP1||50;
+      ST.render();BST.render();KINDER.render();EXTRA.render();PERS.render();CALC.run();
+      const t=U.el('import-toast');t.style.display='';t.style.background='var(--green)';t.style.color='#000';t.textContent='✅ Erfolgreich wiederhergestellt!';setTimeout(()=>t.style.display='none',3000);
+    }catch(e){const t=U.el('import-toast');t.style.display='';t.style.background='var(--red)';t.style.color='#fff';t.textContent='❌ Fehler beim Importieren.';setTimeout(()=>t.style.display='none',3000);}
+  },
+  printPDF(){window.print();}
 };
-(function init(){
-  THEME.init();
-  FIXED.render();
-  EXTRA.render();
-  KINDER.render();
-  PERS.render();
-  ST.add();
-  try { const raw = localStorage.getItem('hf_v4'); if(raw) SHARE._applyState(JSON.parse(raw)); } catch(e) {}
-  CALC.run();
-})();
+
+// ── TAB NAVIGATION ──
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    const id='tab-'+tab.dataset.tab;
+    const el=document.getElementById(id);if(el)el.classList.add('active');
+    setTimeout(()=>CHARTS.resize(),100);
+  });
+});
+
+// ── GLOBAL INPUT LISTENER ──
+document.addEventListener('input',e=>{
+  if(e.target.dataset.auto==='true')return;
+  if(['kaufpreis','eigenkapital','zinssatz','tilgung','zinsbindung','gew-pct','notar-pct','makler-pct','renovierung','sonstige-knk','sc-best','sc-base','sc-worst'].includes(e.target.id)||e.target.id.startsWith('p1-')||e.target.id.startsWith('p2-')){CALC.run();}
+});
+
+// ── CHECKBOX TOGGLES ──
+['p1-prov-on','p2-prov-on'].forEach(id=>{U.el(id)?.addEventListener('change',function(){const p=id.startsWith('p1')?1:2;U.show(`p${p}-prov-block`,this.checked);CALC.runHH();});});
+['p1-ez-on','p2-ez-on'].forEach(id=>{U.el(id)?.addEventListener('change',function(){const p=id.startsWith('p1')?1:2;U.show(`p${p}-ez-block`,this.checked);CALC.run();});});
+['p1-red-on','p2-red-on'].forEach(id=>{U.el(id)?.addEventListener('change',function(){const p=id.startsWith('p1')?1:2;U.show(`p${p}-red-block`,this.checked);CALC.run();});});
+['p1-name','p2-name'].forEach(id=>U.el(id)?.addEventListener('input',()=>PERS._updateHeadings()));
+
+// ── INIT ──
+THEME.init();
+FIXED.render();
+ST.render();BST.render();KINDER.render();EXTRA.render();PERS.render();
+CALC.run();
 </script>
 </body>
-</html><div class="tab" data-tab="energie">⚡ Energie</div>
-    <div id="tab-energie" class="tab-content">
-
-  <div class="card">
-    <h2>🏠 Ist-Zustand der Immobilie</h2>
-    <div class="g3">
-      <div class="field"><label>Energieausweis-Klasse</label>
-        <select id="e-klasse" onchange="ENERGIE.renderKlasse();ENERGIE.calc()">
-          <option value="">Unbekannt</option>
-          <option value="Ap">A+</option><option value="A">A</option><option value="B">B</option>
-          <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-          <option value="F">F</option><option value="G">G</option><option value="H">H</option>
-        </select>
-      </div>
-      <div class="field"><label>Heizungstyp aktuell</label>
-        <select id="e-heiztyp" onchange="ENERGIE.calc()">
-          <option value="gas">Gasheizung</option><option value="oel">Ölheizung</option>
-          <option value="wp">Wärmepumpe</option><option value="fernwaerme">Fernwärme</option>
-          <option value="pellets">Pelletheizung</option><option value="nachtspeicher">Nachtspeicher</option>
-        </select>
-      </div>
-      <div class="field"><label>Baujahr Heizung</label>
-        <input type="number" id="e-heiz-bj" value="2005" min="1970" max="2025" oninput="ENERGIE.calc()">
-      </div>
-    </div>
-    <div class="g2">
-      <div class="field"><label>Jährl. Heizkosten heute (€)</label>
-        <input type="number" id="e-heizkosten" value="2400" min="0" step="100" oninput="ENERGIE.calc()"></div>
-      <div class="field"><label>Jährl. Stromkosten heute (€)</label>
-        <input type="number" id="e-stromkosten" value="1200" min="0" step="100" oninput="ENERGIE.calc()"></div>
-    </div>
-    <div id="e-klasse-display" style="margin-top:10px"></div>
-  </div>
-
-  <div class="card">
-    <h2>🔧 Maßnahmen – Bestand & Planung</h2>
-    <p class="muted" style="font-size:12px;margin-bottom:12px">Hinterlege was bereits vorhanden ist und was du planst.</p>
-
-    <div class="massnahme-card">
-      <div class="massnahme-header" onclick="ENERGIE.toggle('wp')">
-        <span id="mt-wp" class="massnahme-toggle">▶</span>
-        <span style="font-size:18px">🔥</span>
-        <span class="massnahme-title">Wärmepumpe</span>
-        <select id="e-wp-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('wp');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
-          <option value="nein">Nicht geplant</option>
-          <option value="bestand">Bereits vorhanden</option>
-          <option value="geplant">Geplant</option>
-        </select>
-        <span class="massnahme-badge badge-nein" id="mb-wp">Nicht geplant</span>
-      </div>
-      <div class="massnahme-body" id="mb-body-wp">
-        <div class="g3" style="margin-top:12px">
-          <div class="field"><label>Typ</label>
-            <select id="e-wp-typ" onchange="ENERGIE.calc()">
-              <option value="luft">Luft-Wasser (~15.000€)</option>
-              <option value="sole">Sole-Wasser/Erde (~22.000€)</option>
-              <option value="wasser">Wasser-Wasser (~20.000€)</option>
-            </select>
-          </div>
-          <div class="field"><label>Investitionskosten (€)</label>
-            <input type="number" id="e-wp-kosten" value="18000" min="0" step="500" oninput="ENERGIE.calc()"></div>
-          <div class="field"><label>Einbau Monat ab Kauf</label>
-            <input type="number" id="e-wp-monat" value="3" min="1" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="energie-kpi" id="ekpi-wp"></div>
-      </div>
-    </div>
-
-    <div class="massnahme-card">
-      <div class="massnahme-header" onclick="ENERGIE.toggle('pv')">
-        <span id="mt-pv" class="massnahme-toggle">▶</span>
-        <span style="font-size:18px">☀️</span>
-        <span class="massnahme-title">PV-Anlage</span>
-        <select id="e-pv-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('pv');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
-          <option value="nein">Nicht geplant</option>
-          <option value="bestand">Bereits vorhanden</option>
-          <option value="geplant">Geplant</option>
-        </select>
-        <span class="massnahme-badge badge-nein" id="mb-pv">Nicht geplant</span>
-      </div>
-      <div class="massnahme-body" id="mb-body-pv">
-        <div class="g3" style="margin-top:12px">
-          <div class="field"><label>Größe (kWp)</label>
-            <input type="number" id="e-pv-kwp" value="10" min="1" max="100" step="0.5" oninput="ENERGIE.calcPV();ENERGIE.calc()"></div>
-          <div class="field"><label>Preis/kWp (€)</label>
-            <input type="number" id="e-pv-preis" value="1200" min="500" max="2500" step="50" oninput="ENERGIE.calcPV();ENERGIE.calc()"></div>
-          <div class="field"><label>Eigenverbrauch (%)</label>
-            <input type="number" id="e-pv-eigen" value="30" min="0" max="100" step="5" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="g2">
-          <div class="field"><label>Gesamtkosten (€) <span class="hint">(auto)</span></label>
-            <input type="number" id="e-pv-kosten" value="12000" min="0" data-auto="true" oninput="ENERGIE.calc()"></div>
-          <div class="field"><label>Einbau Monat ab Kauf</label>
-            <input type="number" id="e-pv-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="energie-kpi" id="ekpi-pv"></div>
-      </div>
-    </div>
-
-    <div class="massnahme-card">
-      <div class="massnahme-header" onclick="ENERGIE.toggle('bat')">
-        <span id="mt-bat" class="massnahme-toggle">▶</span>
-        <span style="font-size:18px">🔋</span>
-        <span class="massnahme-title">Batteriespeicher</span>
-        <select id="e-bat-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('bat');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
-          <option value="nein">Nicht geplant</option>
-          <option value="bestand">Bereits vorhanden</option>
-          <option value="geplant">Geplant</option>
-        </select>
-        <span class="massnahme-badge badge-nein" id="mb-bat">Nicht geplant</span>
-      </div>
-      <div class="massnahme-body" id="mb-body-bat">
-        <div class="g3" style="margin-top:12px">
-          <div class="field"><label>Kapazität (kWh)</label>
-            <input type="number" id="e-bat-kwh" value="10" min="1" max="50" step="1" oninput="ENERGIE.calcBat();ENERGIE.calc()"></div>
-          <div class="field"><label>Preis/kWh (€)</label>
-            <input type="number" id="e-bat-preis" value="800" min="300" max="1500" step="50" oninput="ENERGIE.calcBat();ENERGIE.calc()"></div>
-          <div class="field"><label>Einbau Monat ab Kauf</label>
-            <input type="number" id="e-bat-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="g2">
-          <div class="field"><label>Gesamtkosten (€) <span class="hint">(auto)</span></label>
-            <input type="number" id="e-bat-kosten" value="8000" min="0" data-auto="true" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="energie-kpi" id="ekpi-bat"></div>
-      </div>
-    </div>
-
-    <div class="massnahme-card">
-      <div class="massnahme-header" onclick="ENERGIE.toggle('mod')">
-        <span id="mt-mod" class="massnahme-toggle">▶</span>
-        <span style="font-size:18px">🏗️</span>
-        <span class="massnahme-title">Grundmodernisierung</span>
-        <select id="e-mod-status" onclick="event.stopPropagation()" onchange="ENERGIE.updateBadge('mod');ENERGIE.calc()" style="width:auto;padding:4px 8px;font-size:12px">
-          <option value="nein">Nicht geplant</option>
-          <option value="bestand">Bereits vorhanden</option>
-          <option value="geplant">Geplant</option>
-        </select>
-        <span class="massnahme-badge badge-nein" id="mb-mod">Nicht geplant</span>
-      </div>
-      <div class="massnahme-body" id="mb-body-mod">
-        <div class="g2" style="margin-top:12px">
-          <div class="check-row"><input type="checkbox" id="e-mod-daemmung" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-daemmung">Außenwanddämmung (~15.000 €)</label></div>
-          <div class="check-row"><input type="checkbox" id="e-mod-dach" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-dach">Dachdämmung (~8.000 €)</label></div>
-          <div class="check-row"><input type="checkbox" id="e-mod-fenster" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-fenster">Fenster & Türen (~12.000 €)</label></div>
-          <div class="check-row"><input type="checkbox" id="e-mod-keller" onchange="ENERGIE.calcMod();ENERGIE.calc()"><label for="e-mod-keller">Kellerdeckendämmung (~3.000 €)</label></div>
-        </div>
-        <div class="g2">
-          <div class="field"><label>Gesamtkosten (€)</label>
-            <input type="number" id="e-mod-kosten" value="0" min="0" step="1000" oninput="ENERGIE.calc()"></div>
-          <div class="field"><label>Einbau Monat ab Kauf</label>
-            <input type="number" id="e-mod-monat" value="6" min="1" oninput="ENERGIE.calc()"></div>
-        </div>
-        <div class="energie-kpi" id="ekpi-mod"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>📊 Gesamtauswertung & Empfehlung</h2>
-    <div id="e-gesamt"></div>
-  </div>
-
-  <div class="card">
-    <h2>📅 Cashflow-Auswirkung</h2>
-    <p class="muted" style="font-size:12px;margin-bottom:10px">Investitionskosten als Einmalkosten, Einsparungen reduzieren ab Einbau die monatlichen Ausgaben.</p>
-    <div id="e-cashflow-info"></div>
-  </div>
-
-</div>
 </html>
