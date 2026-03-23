@@ -180,103 +180,21 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 .empfehlung-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:13px}
 .empfehlung-rank{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .cf-energie{background:rgba(6,214,160,.06);border-left:3px solid var(--green)}
+.topbar{display:flex;background:var(--bg2);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200}
 </style>
 </head>
 <body>
 
+<div class="topbar">
 <div class="tabs">
   <div class="tab active" data-tab="fin">🏠 Finanzierung</div>
   <div class="tab" data-tab="hh">📊 Haushalt</div>
   <div class="tab" data-tab="pers">👥 Personen</div>
   <div class="tab" data-tab="ov">📋 Übersicht</div>
-
-  <button id="theme-btn" onclick="THEME.toggle()" style="flex-shrink:0;margin:6px 10px;padding:6px 12px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;white-space:nowrap;">🌙 Dark</button></div>
-
-<!-- ==================== TAB FINANZIERUNG ==================== -->
-<div id="tab-fin" class="tab-content active">
-
-  <!-- TIMELINE -->
-  <div class="dashboard">
-    <div class="kpi"><div class="kpi-label">💰 Monatliche Rate</div><div class="kpi-val" id="k-rate">–</div></div>
-    <div class="kpi"><div class="kpi-label">📅 Gesamtlaufzeit</div><div class="kpi-val" id="k-lz">–</div></div>
-    <div class="kpi"><div class="kpi-label">💸 Gesamtzinsen</div><div class="kpi-val sm" id="k-zinsen">–</div></div>
-    <div class="kpi"><div class="kpi-label">🏷️ Gesamtkosten inkl. NK</div><div class="kpi-val sm" id="k-gesamt">–</div></div>
-    <div class="kpi"><div class="kpi-label">🏦 Restschuld Zinsb.-Ende</div><div class="kpi-val sm" id="k-rest">–</div></div>
-  </div>
-  <div class="card">
-    <h2>🏗️ Immobilien-Eckdaten</h2>
-    <div class="g3">
-      <div class="field"><label>Grundstücksgröße (m²)</label><input type="number" id="i-grundstueck" value="500" min="0"></div>
-      <div class="field"><label>Wohnfläche (m²)</label><input type="number" id="i-wohnflaeche" value="150" min="0"></div>
-      <div class="field"><label>Baujahr</label><input type="number" id="i-baujahr" value="2015" min="1900" max="2030"></div>
-    </div>
-    <div class="g2">
-      <div class="field"><label>Immobilientyp</label>
-        <select id="i-typ"><option>Einfamilienhaus</option><option>Doppelhaushälfte</option><option>Reihenhaus</option></select></div>
-    </div>
-    <div class="section-label">Grundsteuer (SH – editierbar)</div>
-    <div class="g3">
-      <div class="field"><label>Bodenrichtwert (€/m²)</label><input type="number" id="i-bodenricht" value="120" min="0"></div>
-      <div class="field"><label>Messzahl (‰)</label><input type="number" id="i-messzahl" value="0.35" step="0.01" min="0"></div>
-      <div class="field"><label>Hebesatz (%)</label><input type="number" id="i-hebesatz" value="360" min="0"></div>
-    </div>
-    <div class="g2">
-      <div class="field"><label>Grundsteuer/Monat (€)<span class="hint" id="gs-hint"></span></label>
-        <input type="number" id="i-grundsteuer" value="0" min="0" data-auto="true"></div>
-      <div class="field"><label>Instandhaltung/Monat (€)<span class="hint" id="ih-hint"></span></label>
-        <input type="number" id="i-instand" value="0" min="0" data-auto="true"></div>
-    </div>
-  </div>
-  <div class="card">
-    <h2>💳 Kreditparameter</h2>
-    <div class="g3">
-      <div class="field"><label>Kaufpreis (€)</label><input type="number" id="f-kaufpreis" value="450000" min="0"></div>
-      <div class="field"><label>Eigenkapital (€)</label><input type="number" id="f-ek" value="90000" min="0"></div>
-      <div class="field"><label>Kreditbetrag (€)<span class="hint">(auto)</span></label>
-        <input type="number" id="f-kredit" value="360000" min="0" data-auto="true"></div>
-    </div>
-    <div class="g3">
-      <div class="field"><label>Zinssatz p.a. (%)</label><input type="number" id="f-zins" value="3.5" min="0" max="20" step="0.01"></div>
-      <div class="field"><label>Anfangstilgung p.a. (%)</label><input type="number" id="f-tilg" value="2.0" min="0.1" max="20" step="0.1"></div>
-      <div class="field"><label>Zinsbindung (Jahre)</label><input type="number" id="f-bind" value="15" min="1" max="30"></div>
-    </div>
-    <div id="warn-zins" class="alert alert-warn" style="display:none">⚠️ Kreditbetrag > 0 aber Zinssatz = 0</div>
-  </div>
-  <div class="card">
-    <h2>📋 Kaufnebenkosten</h2>
-    <div class="g2">
-      <div class="field"><label>Grunderwerbsteuer (%) – SH 6,5 %</label><input type="number" id="nk-grest" value="6.5" min="0" step="0.1"></div>
-      <div class="field"><label>Notarkosten (%)</label><input type="number" id="nk-notar" value="1.5" min="0" step="0.1"></div>
-      <div class="field"><label>Grundbucheintrag (%)</label><input type="number" id="nk-gb" value="0.5" min="0" step="0.1"></div>
-      <div class="field"><label>Maklercourtage (%, 0 = kein)</label><input type="number" id="nk-makler" value="0" min="0" step="0.1"></div>
-    </div>
-    <div id="nk-info" class="muted" style="font-size:13px;margin-top:6px"></div>
-  </div>
-  <div class="card">
-    <h2>🤝 Privater Kredit</h2>
-    <div class="alert alert-info">ℹ️ Nicht grundbuchgesichert – schriftliche Vereinbarung empfohlen.</div>
-    <div class="g2" style="margin-top:10px">
-      <div class="field"><label>Betrag (€)</label><input type="number" id="pk-betrag" value="0" min="0"></div>
-      <div class="field"><label>Zinssatz p.a. (%)</label><input type="number" id="pk-zins" value="0" min="0" step="0.1"></div>
-    </div>
-    <div class="field"><label>Rückzahlungsmodalität</label>
-      <select id="pk-mode"><option value="einmal">Einmalrückzahlung</option><option value="monatlich">Monatliche Rate</option><option value="jaehrlich">Jährliche Rate</option></select></div>
-    <div id="pk-einmal"><div class="field"><label>Rückzahlung in Monat Nr.</label><input type="number" id="pk-em" value="60" min="1"></div></div>
-    <div id="pk-monatlich" style="display:none">
-      <div class="field"><label>Monatliche Rate (€)</label><input type="number" id="pk-mrate" value="200" min="0"></div>
-      <div id="pk-m-info" class="muted" style="font-size:12px"></div>
-    </div>
-    <div id="pk-jaehrlich" style="display:none">
-      <div class="field"><label>Jährliche Rate (€)</label><input type="number" id="pk-jrate" value="2400" min="0"></div>
-      <div id="pk-j-info" class="muted" style="font-size:12px"></div>
-    </div>
-    <div id="pk-zins-info" class="muted" style="font-size:12px;margin-top:6px"></div>
-  </div>
-  <div class="card">
-    <h2>⚡ Sondertilgungen</h2>
-    <div id="sonder-list"></div>
-    <button class="btn btn-sm" onclick="ST.add()">+ Sondertilgung hinzufügen</button>
-    <div id="sonder-info" class="muted" style="font-size:13px;margin-top:8px"></div>
+  <div class="tab" data-tab="energie">⚡ Energie</div>
+</div>
+<button id="theme-btn" onclick="THEME.toggle()" style="flex-shrink:0;margin:6px 10px;padding:6px 12px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;white-space:nowrap;">🌙 Dark</button>
+</div>    <div id="sonder-info" class="muted" style="font-size:13px;margin-top:8px"></div>
   </div>
   <div class="card">
     <h2>🔄 Anschlussfinanzierung (Bausteine)</h2>
