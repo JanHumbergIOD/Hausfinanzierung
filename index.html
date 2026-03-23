@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -13,7 +13,15 @@
   --red:#ff4d6d; --yellow:#ffd166; --green:#06d6a0;
   --purple:#9b5de5; --pink:#ff9ff3;
   --radius:10px; --card-pad:18px;
-}
+
+:root[data-theme="light"] {
+  --bg:#f0f4f8; --bg2:#ffffff; --bg3:#e8eef5; --bg4:#d8e4f0;
+  --border:#b0c8e0; --text:#1a2a3a; --text2:#4a6a8a;
+  --accent:#00a896; --accent2:#0077cc;
+  --red:#d93257; --yellow:#d4a017; --green:#059669;
+  --purple:#7c3aed; --pink:#db2777;
+  --radius:10px; --card-pad:18px;
+}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
@@ -181,18 +189,13 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
   <div class="tab" data-tab="hh">📊 Haushalt</div>
   <div class="tab" data-tab="pers">👥 Personen</div>
   <div class="tab" data-tab="ov">📋 Übersicht</div>
-</div>
+
+  <button id="theme-btn" onclick="THEME.toggle()" style="flex-shrink:0;margin:6px 10px;padding:6px 12px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;white-space:nowrap;">🌙 Dark</button></div>
 
 <!-- ==================== TAB FINANZIERUNG ==================== -->
 <div id="tab-fin" class="tab-content active">
 
   <!-- TIMELINE -->
-  <div class="card" id="timeline-card">
-    <h2>🗓️ Ereignis-Timeline</h2>
-    <p class="muted" style="font-size:12px;margin-bottom:8px">Alle wichtigen Ereignisse über die Kreditlaufzeit auf einen Blick.</p>
-    <div class="timeline-wrap"><div class="timeline" id="tl-inner"></div></div>
-    <div id="tl-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px"></div>
-  </div>
   <div class="dashboard">
     <div class="kpi"><div class="kpi-label">💰 Monatliche Rate</div><div class="kpi-val" id="k-rate">–</div></div>
     <div class="kpi"><div class="kpi-label">📅 Gesamtlaufzeit</div><div class="kpi-val" id="k-lz">–</div></div>
@@ -555,6 +558,8 @@ tr.tr-last td{background:rgba(6,214,160,.1);font-weight:700;color:var(--green)}
 </div>
 
 <script>
+const THEME={cur:'dark',toggle(){this.cur=this.cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',this.cur);const b=document.getElementById('theme-btn');if(b)b.textContent=this.cur==='dark'?'🌙 Dark':'☀️ Light';setTimeout(()=>CHARTS.resize(),50);try{localStorage.setItem('hf_theme',this.cur);}catch(e){}},init(){try{const s=localStorage.getItem('hf_theme');if(s&&s!==this.cur)this.toggle();}catch(e){}}};
+
 /* ============================================================
    MODULE 0 – UTILITIES
    ============================================================ */
@@ -971,7 +976,7 @@ const CASHFLOW={
 
       const kg=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kindergeld:s,0);
       const kindK=KINDER.items.reduce((s,k)=>m>=k.geburtM?s+k.kosten:s,0);
-      const energieEinmal=(()=>{  let s=0;  ['wp','pv','bat','mod'].forEach(function(id){    const r=energieRes[id];    if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat) s+=r.nettoKosten;  });  return s;})();const energieRes=window._energieResults||{};    const einkommen=p1+p2+kg;
+      const energieRes=window._energieResults||{};let energieEinmal=0;['wp','pv','bat','mod'].forEach(function(id){const r=energieRes[id];if(r&&r.status==='geplant'&&r.nettoKosten>0&&m===r.monat)energieEinmal+=r.nettoKosten;});const einkommen=p1+p2+kg;
       const kRate=planData[m-1]?.rate??0;
       const wohn=wohnBase*inf;
       const leben=(lebenBase+kindK)*inf;
@@ -1183,7 +1188,6 @@ const CALC={
     CHARTS.bar('ch-zt',[{label:'Zinsanteil',data:yrs.map(y=>by[y].za),backgroundColor:'rgba(255,77,109,.7)',stack:'a'},{label:'Tilgung',data:yrs.map(y=>by[y].ta),backgroundColor:'rgba(0,201,177,.7)',stack:'a'}],yrs.map(y=>'J'+y),true);
     CHARTS.doughnut('ch-donut',['Kreditbetrag','Nebenkosten','Gesamtzinsen'],[kredit,nkSum,totalZinsen],['#0099ff','#ffd166','#ff4d6d']);
     // New modules
-    TIMELINE.render(plan);
     ZINSRISIKO.render(plan, kredit);
   },
 
@@ -1572,6 +1576,7 @@ const SHARE = {
    MODULE 14 – INIT
    ============================================================ */
 (function init(){
+  THEME.init();
   FIXED.render();
   EXTRA.render();
   KINDER.render();
@@ -1746,94 +1751,6 @@ const STORAGE = {
 /* ============================================================
    TIMELINE MODULE
    ============================================================ */
-const TIMELINE = {
-  COLORS: {
-    start:    '#00c9b1',
-    zinsende: '#ffd166',
-    sonder:   '#9b5de5',
-    elternzeit:'#f77f00',
-    kind:     '#ff9ff3',
-    anschluss:'#ff4d6d',
-    heute:    '#06d6a0'
-  },
-  render(plan) {
-    const el = document.getElementById('tl-inner');
-    const leg = document.getElementById('tl-legend');
-    if (!el || !plan.length) return;
-
-    const lzM = plan.length;
-    const bindM = U.n('f-bind') * 12;
-    const startStr = U.s('f-start') || '2025-01';
-    const [sYr, sMo] = startStr.split('-').map(Number);
-
-    const toX = m => (m / lzM) * 100;
-
-    // Collect events
-    const events = [];
-    events.push({ m:1, label:'Start
-'+startStr, color:this.COLORS.start, icon:'🏠' });
-    events.push({ m:bindM, label:'Zinsbindungsende
-'+U.monthLabel(bindM), color:this.COLORS.zinsende, icon:'🔄' });
-    events.push({ m:lzM, label:'Volltilgung
-'+U.monthLabel(lzM), color:this.COLORS.anschluss, icon:'✅' });
-
-    // Sondertilgungen
-    ST.items.forEach(s => {
-      if (s.betrag > 0) {
-        const m = s.abJahr * 12;
-        if (m <= lzM) events.push({ m, label:'Sondert.
-'+U.eur(s.betrag), color:this.COLORS.sonder, icon:'⚡' });
-      }
-    });
-
-    // Elternzeiten
-    ['1','2'].forEach(p => {
-      if (U.chk('p'+p+'-ez-on')) {
-        const start = U.n('p'+p+'-ez-start');
-        const dauer = U.n('p'+p+'-ez-dauer');
-        if (start <= lzM) events.push({ m:start, label:'EZ '+U.name(p), color:this.COLORS.elternzeit, icon:'👶', width:(dauer/lzM*100) });
-      }
-    });
-
-    // Kinder
-    KINDER.items.forEach(k => {
-      if (k.geburtM <= lzM) events.push({ m:k.geburtM, label:k.name, color:this.COLORS.kind, icon:'👶' });
-    });
-
-    // Heute
-    const now = new Date();
-    const todayM = (now.getFullYear()-sYr)*12 + (now.getMonth()+1-sMo);
-    if (todayM > 0 && todayM < lzM) events.push({ m:todayM, label:'Heute', color:this.COLORS.heute, icon:'📍' });
-
-    // Year markers
-    const years = [];
-    for (let y=1; y<=Math.ceil(lzM/12); y+=Math.max(1,Math.floor(lzM/12/8))) {
-      years.push(y);
-    }
-
-    el.style.height = '80px';
-    el.innerHTML =
-      '<div class="tl-line"></div>' +
-      years.map(y => '<div class="tl-year" style="left:'+toX(y*12)+'%">'+U.yearLabel(y)+'</div>').join('') +
-      events.map(e => {
-        const x = toX(e.m);
-        const w = e.width ? e.width : 0;
-        if (w > 0) {
-          return '<div style="position:absolute;left:'+x+'%;top:30px;width:'+w+'%;height:14px;background:'+e.color+'33;border:1px solid '+e.color+';border-radius:4px;cursor:default" title="'+e.label.replace('
-',' ')+'"></div>'+
-            '<div class="tl-event" style="left:'+x+'%"><div class="tl-dot" style="background:'+e.color+'"></div><div class="tl-label">'+e.label.replace('
-','<br>')+'</div></div>';
-        }
-        return '<div class="tl-event" style="left:'+x+'%"><div class="tl-dot" style="background:'+e.color+'"></div><div class="tl-label">'+e.icon+' '+e.label.replace('
-','<br>')+'</div></div>';
-      }).join('');
-
-    // Legend
-    const colors = Object.entries(this.COLORS);
-    const labels = {start:'Kreditstart',zinsende:'Zinsbindungsende',sonder:'Sondertilgung',elternzeit:'Elternzeit',kind:'Kind',anschluss:'Volltilgung',heute:'Heute'};
-    leg.innerHTML = colors.map(([k,c]) => '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:'+c+';display:inline-block"></span>'+labels[k]+'</span>').join('');
-  }
-};
 
 /* ============================================================
    ZINSRISIKO MODULE
