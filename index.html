@@ -981,7 +981,7 @@ var CASHFLOW={
       const wohn=wohnBase*inf;
       const leben=(lebenBase+kindK)*inf;
       const sonstige=(extraBase+pkM)*inf;
-      const ausgaben=kRate+wohn+leben+(extraBase+pkM)*inf-energieSpar;
+      const energieSpar=(()=>{let s=0;const eR=window._energieResults||{};['wp','pv','bat','mod'].forEach(function(id){const r=eR[id];if(r&&r.status!=='nein'&&r.einsparungJahr>0&&m>=(r.monat||1))s+=r.einsparungJahr/12;});return s;})();const ausgaben=kRate+wohn+leben+(extraBase+pkM)*inf-energieSpar;
       const frei=einkommen-ausgaben-energieEinmal;
       const inEZ1=income.ez1&&m>=income.ez1.start&&m<income.ez1.start+income.ez1.dauer;
       const inEZ2=income.ez2&&m>=income.ez2.start&&m<income.ez2.start+income.ez2.dauer;
