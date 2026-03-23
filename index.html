@@ -1575,16 +1575,7 @@ var SHARE = {
 /* ============================================================
    MODULE 14 – INIT
    ============================================================ */
-(function init(){
-  THEME.init();
-  FIXED.render();
-  EXTRA.render();
-  KINDER.render();
-  PERS.render();
-  ST.add();
-  try { const raw = localStorage.getItem('hf_v4'); if(raw) SHARE._applyState(JSON.parse(raw)); } catch(e) {}
-  CALC.run();
-})();
+// init() moved to end of script
 
 
 
@@ -1967,6 +1958,16 @@ CALC._calcPKMode=function(){
   const m=U.s('pk-mode');
   U.show('pk-einmal',m==='einmal');U.show('pk-monatlich',m==='monatlich');U.show('pk-jaehrlich',m==='jaehrlich');
 };
+(function init(){
+  THEME.init();
+  FIXED.render();
+  EXTRA.render();
+  KINDER.render();
+  PERS.render();
+  ST.add();
+  try { const raw = localStorage.getItem('hf_v4'); if(raw) SHARE._applyState(JSON.parse(raw)); } catch(e) {}
+  CALC.run();
+})();
 </script>
 </body>
 </html><div class="tab" data-tab="energie">⚡ Energie</div>
